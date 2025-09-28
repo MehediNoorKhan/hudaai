@@ -114,6 +114,7 @@ export default function DashboardLayout() {
         { name: "Profile", path: "/dashboard/profile", icon: <FaUser />, roles: ["user"] },
         { name: "Add Post", path: "/dashboard/addpost", icon: <FaPlus />, roles: ["user"] },
         { name: "My Posts", path: "/dashboard/myposts", icon: <FaPlus />, roles: ["user"] },
+        { name: "Profile", path: "/dashboard/adminprofile", icon: <FaUser />, roles: ["admin"] },
         { name: "Manage Users", path: "/dashboard/manageusers", icon: <FaUsers />, roles: ["admin"] },
         { name: "Add Announcement", path: "/dashboard/addannouncement", icon: <FaBullhorn />, roles: ["admin"] },
         { name: "Reported Comments", path: "/dashboard/reportedcomments", icon: <FaFlag />, roles: ["admin"] },
