@@ -8,7 +8,25 @@ import { useNavigate } from "react-router";
 
 const SocialLogin = () => {
     const { googleLogin } = useContext(AuthContext);
-    const navigate = useNavigate(); // hook for navigation
+    const navigate = useNavigate();
+
+    const uploadToImgbb = async (imageUrl) => {
+        try {
+            const formData = new FormData();
+            formData.append("image", imageUrl);
+
+            const res = await axios.post(
+                `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMGBB_API_KEY}`,
+                formData,
+                { headers: { "Content-Type": "multipart/form-data" } }
+            );
+
+            return res.data.data.display_url;
+        } catch (err) {
+            console.error("Image upload error:", err);
+            return imageUrl; // fallback to original
+        }
+    };
 
     const handleGoogleLogin = () => {
         googleLogin(auth)
@@ -16,12 +34,18 @@ const SocialLogin = () => {
                 const user = result.user;
                 const additionalUserInfo = getAdditionalUserInfo(result);
 
+                // upload Google photoURL to imgbb
+                let avatarUrl = user.photoURL;
+                if (avatarUrl) {
+                    avatarUrl = await uploadToImgbb(avatarUrl);
+                }
+
                 // Only save user in DB if first-time login
                 if (additionalUserInfo.isNewUser) {
                     const userData = {
                         fullName: user.displayName,
                         email: user.email,
-                        avatar: user.photoURL,
+                        avatar: avatarUrl,
                         uid: user.uid,
                         role: "user",
                         user_status: "Bronze",
@@ -58,7 +82,7 @@ const SocialLogin = () => {
                     });
                 }
 
-                // Navigate to home page after login
+                // Navigate after login
                 navigate("/");
             })
             .catch((error) => {
@@ -74,7 +98,7 @@ const SocialLogin = () => {
     return (
         <button
             onClick={handleGoogleLogin}
-            className="btn btn-outline w-full mt-3"
+            className="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600 transition"
         >
             Continue with Google
         </button>

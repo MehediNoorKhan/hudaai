@@ -15,6 +15,9 @@ import MyPosts from "../Dashboard/MyPosts";
 import PostComments from "../Dashboard/PostComments";
 import ManageUsers from "../Dashboard/ManageUsers";
 import ReportedComments from "../Dashboard/ReportedComments";
+import UserRoute from "../Components/UserRoute";
+import { Component } from "react";
+import Forbidden from "../Components/Forbidden";
 
 export const router = createBrowserRouter([
     {
@@ -26,6 +29,7 @@ export const router = createBrowserRouter([
             { path: "login", Component: Login },
 
             { path: "postdetails/:id", Component: PostDetails },
+            { path: "forbidden", Component: Forbidden }
 
         ],
     },
@@ -34,9 +38,12 @@ export const router = createBrowserRouter([
         Component: DashboardLayout,
         children: [
             { index: true, Component: DashboardHome }, // default: /dashboard
-            { path: "profile", Component: DashboardProfile }, // /dashboard/profile
+            {
+                path: "profile",
+                element: <UserRoute><DashboardProfile /></UserRoute>
+            }, // /dashboard/profile
             { path: "addpost", Component: AddPost },
-            { path: "myposts", Component: MyPosts },
+            { path: "myposts", element: <UserRoute><MyPosts></MyPosts></UserRoute> },
             { path: "manageusers", Component: ManageUsers },
             { path: "posts/:id", Component: PostComments },
             { path: "addannouncement", Component: AddAnnouncement },
