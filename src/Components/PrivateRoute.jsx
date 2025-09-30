@@ -1,6 +1,6 @@
 import { useContext } from "react";
-import { Navigate, useLocation } from "react-router-dom";
-import { AuthContext } from "../Context/AuthContext"; // adjust path if needed
+import { Navigate, useLocation } from "react-router";
+import { AuthContext } from "../Components/AuthContext.js"; // adjust path if needed
 import LoadingSpinner from "../Components/LoadingSpinner"; // optional loader
 
 const PrivateRoute = ({ children }) => {

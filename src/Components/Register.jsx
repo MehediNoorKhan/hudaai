@@ -3,6 +3,7 @@ import axios from "axios";
 import SocialLogin from "./SocialLogin";
 import { AuthContext } from "./AuthContext"; // AuthProvider
 import Swal from "sweetalert2"; // ✅ Import SweetAlert2
+import { auth } from "../Firebase.config.init";
 
 const Register = () => {
     const { createUser, updateUserProfile } = useContext(AuthContext);

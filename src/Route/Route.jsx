@@ -24,6 +24,7 @@ import Membership from "../Components/Membership";
 import UserHome from "../Dashboard/UserHome";
 import RoleBasedRedirect from "../Dashboard/RoleBasedRedirect";
 import AdminHome from "../Dashboard/AdminHome";
+import PrivateRoute from "../Components/PrivateRoute";
 
 export const router = createBrowserRouter([
     {
@@ -33,8 +34,8 @@ export const router = createBrowserRouter([
             { index: true, Component: Home },
             { path: "register", Component: Register },
             { path: "login", Component: Login },
-            { path: "postdetails/:id", Component: PostDetails },
-            { path: "membership", Component: Membership },
+            { path: "postdetails/:id", element: <PrivateRoute><PostDetails></PostDetails></PrivateRoute> },
+            { path: "membership", element: <UserRoute><Membership></Membership></UserRoute> },
             { path: "forbidden", Component: Forbidden }
 
         ],

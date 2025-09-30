@@ -24,7 +24,7 @@ export default function Announcements() {
         <div className="max-w-4xl mx-auto my-6 py-4 space-y-6">
             <h2 className="text-4xl font-bold text-center text-purple-500 mb-8 mt-4">Announcements</h2>
             {announcements.map((a) => (
-                <div key={a._id} className="bg-green-50 rounded-lg shadow-md p-4">
+                <div key={a._id} className="bg-green-50 rounded-lg shadow-md p-4 mx-2">
                     <div className="flex items-center gap-3 mb-3">
                         <img
                             src={a.authorImage || "/default-avatar.png"}
