@@ -1,5 +1,6 @@
 import { Navigate } from "react-router";
 import useUserRole from "./useUserRole";
+import LoadingSpinner from "./LoadingSpinner";
 
 const AdminRoute = ({ children }) => {
     const [role, loading] = useUserRole(); // ✅ array destructure
@@ -7,7 +8,7 @@ const AdminRoute = ({ children }) => {
     console.log("role inside admin route", role);
 
     if (loading) {
-        return <p className="text-center mt-10">Checking permissions...</p>;
+        return <LoadingSpinner></LoadingSpinner>;
     }
 
     if (role !== "admin") {

@@ -10,6 +10,8 @@ import {
 } from "chart.js";
 import useAxiosSecure from "../Components/useAxiosSecure";
 import { AuthContext } from "../Components/AuthContext";
+import { motion } from "framer-motion";
+import LoadingSpinner from "../Components/LoadingSpinner";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
@@ -50,33 +52,47 @@ export default function UserHome() {
 
     if (loading)
         return (
-            <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-            </div>
+            <LoadingSpinner></LoadingSpinner>
         );
 
     return (
         <div className="p-6 max-w-4xl mx-auto space-y-8">
             {/* Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <div className="bg-white p-6 rounded shadow text-center">
-                    <p className="text-gray-500">Posts</p>
-                    <p className="text-3xl font-bold">{stats.posts}</p>
-                </div>
-                <div className="bg-white p-6 rounded shadow text-center">
-                    <p className="text-gray-500">Comments</p>
-                    <p className="text-3xl font-bold">{stats.comments}</p>
-                </div>
-                <div className="bg-white p-6 rounded shadow text-center">
-                    <p className="text-gray-500">Total Votes</p>
-                    <p className="text-3xl font-bold">{stats.votes}</p>
-                </div>
+                {[
+                    { label: "Posts", value: stats.posts },
+                    { label: "Comments", value: stats.comments },
+                    { label: "Total Votes", value: stats.votes },
+                ].map((stat, index) => (
+                    <motion.div
+                        key={stat.label}
+                        className="bg-white p-6 rounded shadow text-center"
+                        initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        transition={{ delay: index * 0.2, duration: 0.5 }}
+                    >
+                        <p className="text-gray-500">{stat.label}</p>
+                        <motion.p
+                            className="text-3xl font-bold"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.3 + index * 0.2 }}
+                        >
+                            {stat.value}
+                        </motion.p>
+                    </motion.div>
+                ))}
             </div>
 
             {/* Bar Chart */}
-            <div className="bg-white p-6 rounded shadow">
+            <motion.div
+                className="bg-white p-6 rounded shadow"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7, duration: 0.6 }}
+            >
                 <Bar data={barData} />
-            </div>
+            </motion.div>
         </div>
     );
 }
