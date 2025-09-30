@@ -1,6 +1,7 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import LoadingSpinner from "./LoadingSpinner";
 
 const TagBadges = () => {
     const colors = [
@@ -24,8 +25,8 @@ const TagBadges = () => {
         staleTime: 1000 * 60 * 5, // cache for 5 minutes
     });
 
-    if (isLoading) return <p className="text-center mt-4">Loading tags...</p>;
-    if (isError) return <p className="text-center mt-4 text-red-500">Failed to load tags</p>;
+    if (isLoading) return <LoadingSpinner></LoadingSpinner>;
+    if (isError) return <FailedToLoad></FailedToLoad>;
 
     return (
         <div>
