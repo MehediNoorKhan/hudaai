@@ -31,6 +31,7 @@ const AuthProvider = ({ children }) => {
 
         // Fetch JWT from backend
         try {
+            setUser(user);
             const res = await axiosSecure.post("/jwt", { email: result.user.email });
             const token = res.data.token;
             localStorage.setItem("access-token", token); // store JWT
