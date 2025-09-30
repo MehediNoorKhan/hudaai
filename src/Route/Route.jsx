@@ -25,11 +25,13 @@ import UserHome from "../Dashboard/UserHome";
 import RoleBasedRedirect from "../Dashboard/RoleBasedRedirect";
 import AdminHome from "../Dashboard/AdminHome";
 import PrivateRoute from "../Components/PrivateRoute";
+import ErrorPage from "../Components/ErrorPage";
 
 export const router = createBrowserRouter([
     {
         path: "/",
         Component: RootLayout,
+        errorElement: <ErrorPage></ErrorPage>,
         children: [
             { index: true, Component: Home },
             { path: "register", Component: Register },
@@ -61,8 +63,10 @@ export const router = createBrowserRouter([
             { path: "addannouncement", element: <AdminRoute><AddAnnouncement /></AdminRoute> },
             { path: "reportedcomments", element: <AdminRoute><ReportedComments /></AdminRoute> },
         ]
-    }
+    },
+    {
+        path: "*",
+        element: <ErrorPage />,
+    },
 
-
-    // Add more dashboard nested routes here
 ]);
