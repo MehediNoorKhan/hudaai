@@ -36,7 +36,7 @@ const TagBadges = () => {
                     const colorClass = colors[index % colors.length];
                     return (
                         <span
-                            key={tag._id || tag.name}
+                            key={index}
                             className={`text-white px-4 py-2 rounded-3xl ${colorClass} text-md text-center`}
                         >
                             {tag.name}

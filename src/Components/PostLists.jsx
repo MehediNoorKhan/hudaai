@@ -203,7 +203,7 @@ const PostLists = () => {
                 <button
                     onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                     disabled={currentPage === 1}
-                    className="px-4 py-2 bg-gray-300 rounded cursor-pointer disabled:opacity-50 hover:bg-gray-400 transition"
+                    className="px-4 py-2 bg-yellow-300 rounded cursor-pointer disabled:opacity-50 hover:bg-yellow-500 transition"
                 >
                     Prev
                 </button>
@@ -213,7 +213,7 @@ const PostLists = () => {
                 <button
                     onClick={() => setCurrentPage((prev) => Math.min(prev + 1, data.totalPages))}
                     disabled={currentPage === data.totalPages}
-                    className="px-4 py-2 bg-gray-300 rounded cursor-pointer disabled:opacity-50 hover:bg-gray-400 transition"
+                    className="px-4 py-2 bg-yellow-300 rounded cursor-pointer disabled:opacity-50 hover:bg-yellow-500 transition"
                 >
                     Next
                 </button>

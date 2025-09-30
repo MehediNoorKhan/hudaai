@@ -9,7 +9,7 @@ const Home = () => {
     const { user } = useContext(AuthContext); // get logged-in user
 
     return (
-        <div className="space-y-1.5">
+        <div className="space-y-2">
             <Banner></Banner>
             <TagBadges />
             <PostsList user={user} /> {/* pass user prop */}

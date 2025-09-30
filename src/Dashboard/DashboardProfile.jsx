@@ -1,6 +1,15 @@
 import { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../Components/AuthContext";
 import useAxiosSecure from "../Components/useAxiosSecure";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { AwesomeButton } from "react-awesome-button";
+import "react-awesome-button/dist/styles.css";
+import { FaRegCalendarAlt, FaRegClock, FaThumbsUp, FaThumbsDown, FaRegCommentDots } from "react-icons/fa";
+import { motion } from "framer-motion";
+import CountUp from "react-countup";
+import LoadingSpinner from "../Components/LoadingSpinner";
+import FailedToLoad from "../Components/FailedToLoad";
 
 export default function DashboardProfile() {
     const { user } = useContext(AuthContext);
@@ -21,11 +30,7 @@ export default function DashboardProfile() {
             try {
                 setLoading(true);
                 setError(null);
-
-                const res = await axiosSecure.get(`/users/profile`, {
-                    params: { email: user.email },
-                });
-
+                const res = await axiosSecure.get(`/users/profile`, { params: { email: user.email } });
                 setProfile(res.data);
                 setAboutMeText(res.data.aboutMe || "");
             } catch (err) {
@@ -35,54 +40,52 @@ export default function DashboardProfile() {
                 setLoading(false);
             }
         };
-
         fetchProfile();
     }, [user, axiosSecure]);
 
-    // Handle About Me save
     const handleAboutMeSave = async (e) => {
         e.preventDefault();
         try {
             const res = await axiosSecure.put("/users/aboutme", { aboutMe: aboutMeText });
-
             if (res.data?.aboutMe !== undefined) {
                 setProfile((prev) => ({ ...prev, aboutMe: res.data.aboutMe }));
                 setAboutMeEdit(false);
-                alert("About Me updated successfully!");
-            } else {
-                alert("Failed to update About Me.");
-            }
+                toast.success("About Me updated successfully!");
+            } else toast.error("Failed to update About Me.");
         } catch (err) {
-            console.error("Update About Me error:", err);
-            alert("Failed to update About Me.");
+            console.error(err);
+            toast.error("Failed to update About Me.");
         }
     };
 
-    if (loading) return <p className="text-center mt-10">Loading profile...</p>;
-    if (error) return <p className="text-center mt-10 text-red-600">{error}</p>;
+    if (loading) return <LoadingSpinner></LoadingSpinner>;
+    if (error) return <FailedToLoad></FailedToLoad>;
     if (!profile) return <p className="text-center mt-10 text-yellow-600">Profile not found</p>;
 
     return (
-        <div className="p-6 max-w-4xl mx-auto bg-white shadow rounded space-y-6">
-            {/* User Info */}
+        <div className="p-6 max-w-5xl mx-auto bg-gradient-to-b from-blue-50 to-white rounded-lg shadow-xl space-y-6">
+            <ToastContainer position="top-right" autoClose={2000} />
+
+            {/* User Info with animated avatar */}
             <div className="text-center">
-                <img
+                <motion.img
                     src={profile.avatar || "/default-avatar.png"}
                     alt={profile.fullName}
-                    className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-gray-300 object-cover"
+                    className="w-28 h-28 rounded-full mx-auto mb-4 border-4 border-blue-200 object-cover shadow-md"
+                    whileHover={{ scale: 1.1, boxShadow: "0px 10px 20px rgba(0,0,0,0.3)" }}
                 />
-                <h2 className="text-3xl font-bold">{profile.fullName}</h2>
+                <h2 className="text-3xl font-bold text-gray-800">{profile.fullName}</h2>
                 <p className="text-gray-600 mt-1">{profile.email}</p>
             </div>
 
             {/* About Me Section */}
-            <div className="bg-gray-50 p-4 rounded shadow">
-                <div className="flex justify-between items-center mb-2">
-                    <h3 className="text-xl font-semibold">About Me</h3>
+            <div className="bg-gray-50 p-5 rounded-lg shadow-md">
+                <div className="flex justify-between items-center mb-3">
+                    <h3 className="text-xl font-semibold text-gray-800">About Me</h3>
                     {!aboutMeEdit && (
                         <button
                             onClick={() => setAboutMeEdit(true)}
-                            className="text-blue-500 hover:underline text-sm"
+                            className="text-blue-600 hover:underline text-sm cursor-pointer"
                         >
                             Edit
                         </button>
@@ -90,30 +93,28 @@ export default function DashboardProfile() {
                 </div>
 
                 {aboutMeEdit ? (
-                    <form onSubmit={handleAboutMeSave} className="flex flex-col gap-2">
+                    <form onSubmit={handleAboutMeSave} className="flex flex-col gap-3">
                         <textarea
-                            className="border p-2 rounded w-full"
+                            className="border p-3 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
                             value={aboutMeText}
                             onChange={(e) => setAboutMeText(e.target.value)}
                             rows={4}
                         />
-                        <div className="flex gap-2">
-                            <button
-                                type="submit"
-                                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                            >
+                        <div className="flex gap-3">
+                            <AwesomeButton type="primary" size="medium" onPress={handleAboutMeSave} className="cursor-pointer">
                                 Save
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => {
+                            </AwesomeButton>
+                            <AwesomeButton
+                                type="secondary"
+                                size="medium"
+                                onPress={() => {
                                     setAboutMeEdit(false);
                                     setAboutMeText(profile.aboutMe || "");
                                 }}
-                                className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400"
+                                className="cursor-pointer"
                             >
                                 Cancel
-                            </button>
+                            </AwesomeButton>
                         </div>
                     </form>
                 ) : (
@@ -123,48 +124,65 @@ export default function DashboardProfile() {
 
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-gray-50 p-4 rounded-lg text-center">
-                    <div className="text-2xl font-bold text-blue-600">
-                        {profile.totalPostCount || 0}
+                <motion.div
+                    className="bg-white p-5 rounded-lg text-center shadow hover:shadow-lg transition cursor-pointer"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                >
+                    <div className="text-3xl font-bold text-blue-600">
+                        <CountUp end={profile.totalPostCount || 0} duration={1.5} />
                     </div>
-                    <div className="text-gray-600">Total Posts</div>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg text-center">
-                    <div className="text-2xl font-bold text-green-600">
-                        {profile.posts || 0}
+                    <div className="text-gray-600 mt-1">Total Posts</div>
+                </motion.div>
+
+                <motion.div
+                    className="bg-white p-5 rounded-lg text-center shadow hover:shadow-lg transition cursor-pointer"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                >
+                    <div className="text-3xl font-bold text-green-600">
+                        <CountUp end={profile.posts || 0} duration={1.5} />
                     </div>
-                    <div className="text-gray-600">Posts Count</div>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg text-center">
-                    <div className="text-2xl font-bold text-purple-600">
-                        {profile.user_status}
+                    <div className="text-gray-600 mt-1">Posts Count</div>
+                </motion.div>
+
+                <motion.div
+                    className="bg-white p-5 rounded-lg text-center shadow hover:shadow-lg transition cursor-pointer"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.4 }}
+                >
+                    <div className="text-3xl font-bold text-purple-600">
+                        <CountUp end={profile.user_status || 0} duration={1.5} />
                     </div>
-                    <div className="text-gray-600">Status</div>
-                </div>
+                    <div className="text-gray-600 mt-1">Status</div>
+                </motion.div>
             </div>
 
-            {/* Recent Posts */}
+            {/* Recent Posts with slide-in animation */}
             <div>
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-xl font-semibold text-gray-800">Recent Posts</h3>
                     {profile.totalPostCount > 3 && (
-                        <span className="text-sm text-gray-500">
-                            Showing 3 of {profile.totalPostCount} posts
-                        </span>
+                        <span className="text-sm text-gray-500">Showing 3 of {profile.totalPostCount} posts</span>
                     )}
                 </div>
 
                 {profile.recentPosts && profile.recentPosts.length > 0 ? (
                     <div className="space-y-4">
-                        {profile.recentPosts.map((post) => (
-                            <div
+                        {profile.recentPosts.map((post, index) => (
+                            <motion.div
                                 key={post._id}
-                                className="p-5 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 bg-gray-50"
+                                className="p-5 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 bg-white cursor-pointer"
+                                initial={{ opacity: 0, y: 50 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.5, delay: index * 0.1 }}
                             >
-                                <div className="flex justify-between items-start mb-3">
-                                    <h4 className="font-semibold text-lg text-gray-800 line-clamp-1">
-                                        {post.postTitle || post.title}
-                                    </h4>
+                                <div className="flex justify-between items-start mb-2">
+                                    <h4 className="font-semibold text-lg text-gray-800 line-clamp-1">{post.postTitle || post.title}</h4>
                                     {post.tag && (
                                         <span className="inline-block px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700 ml-2">
                                             {post.tag}
@@ -172,40 +190,38 @@ export default function DashboardProfile() {
                                     )}
                                 </div>
 
-                                <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                                    {post.postDescription || post.description}
-                                </p>
+                                <p className="text-gray-600 text-sm mb-3 line-clamp-2">{post.postDescription || post.description}</p>
 
                                 <div className="flex justify-between items-center text-xs text-gray-500">
                                     <div className="flex items-center gap-4">
-                                        <span>
-                                            📅 {new Date(post.creation_time).toLocaleDateString()}
+                                        <span className="flex items-center gap-1">
+                                            <FaRegCalendarAlt /> {new Date(post.creation_time).toLocaleDateString()}
                                         </span>
-                                        <span>
-                                            ⏰ {new Date(post.creation_time).toLocaleTimeString()}
+                                        <span className="flex items-center gap-1">
+                                            <FaRegClock /> {new Date(post.creation_time).toLocaleTimeString()}
                                         </span>
                                     </div>
 
                                     <div className="flex items-center gap-3">
                                         <span className="flex items-center gap-1">
-                                            👍 {post.upVote || 0}
+                                            <FaThumbsUp /> {post.upVote || 0}
                                         </span>
                                         <span className="flex items-center gap-1">
-                                            👎 {post.downVote || 0}
+                                            <FaThumbsDown /> {post.downVote || 0}
                                         </span>
                                         <span className="flex items-center gap-1">
-                                            💬 {post.comments?.length || 0}
+                                            <FaRegCommentDots /> {post.comments?.length || 0}
                                         </span>
                                     </div>
                                 </div>
-                            </div>
+                            </motion.div>
                         ))}
                     </div>
                 ) : (
-                    <div className="text-center py-12 bg-gray-50 rounded-lg">
-                        <div className="text-gray-400 text-6xl mb-4">📝</div>
+                    <div className="text-center py-12 bg-blue-50 rounded-lg">
+                        <div className="text-blue-200 text-6xl mb-4">📝</div>
                         <p className="text-gray-500 text-lg">No posts found</p>
-                        <p className="text-gray-400 text-sm">Start sharing your thoughts with the community!</p>
+                        <p className="text-blue-300 text-sm">Start sharing your thoughts with the community!</p>
                     </div>
                 )}
             </div>

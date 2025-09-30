@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import axios from "axios";
 import { useForm, Controller } from "react-hook-form";
 import Select from "react-select";
@@ -11,13 +11,17 @@ import "react-awesome-button/dist/styles.css";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import LoadingSpinner from "./LoadingSpinner";
+import { useNavigate } from "react-router";
 
 const AddPost = () => {
     const { user } = useContext(AuthContext);
     const axiosSecure = useAxiosSecure();
+    const navigate = useNavigate();
 
     const [uploading, setUploading] = useState(false);
     const [imageUploaded, setImageUploaded] = useState(false);
+    const [actualUserData, setActualUserData] = useState(null);
+    const [loadingUserData, setLoadingUserData] = useState(true);
 
     const { register, handleSubmit, control, reset, setValue, watch } = useForm();
     const IMGBB_API_KEY = import.meta.env.VITE_IMGBB_API_KEY;
@@ -31,6 +35,27 @@ const AddPost = () => {
             return res.data.map((tag) => ({ value: tag.name, label: tag.name }));
         },
     });
+
+    // 🔹 Fetch actual user data from MongoDB
+    useEffect(() => {
+        const fetchUserData = async () => {
+            if (!user?.email) return;
+            try {
+                setLoadingUserData(true);
+                const res = await axiosSecure.get("/users"); // gets all users
+                if (res.data.success && Array.isArray(res.data.data)) {
+                    const matchedUser = res.data.data.find(u => u.email === user.email);
+                    setActualUserData(matchedUser || null);
+                }
+            } catch (err) {
+                console.error("Failed to fetch user data:", err);
+            } finally {
+                setLoadingUserData(false);
+            }
+        };
+
+        fetchUserData();
+    }, [user, axiosSecure]);
 
     // 🔹 Image upload handler
     const handleImageUpload = async (e) => {
@@ -56,7 +81,6 @@ const AddPost = () => {
             if (res.data.success) {
                 setValue("authorImage", res.data.data.url);
                 setImageUploaded(true);
-
             } else {
                 throw new Error("Image upload failed");
             }
@@ -94,7 +118,7 @@ const AddPost = () => {
 
             await axiosSecure.post("/posts", postData);
 
-            toast.success("Post added successfully 🎉");
+            toast.success("Post added successfully");
             reset();
             setImageUploaded(false);
         } catch (err) {
@@ -103,7 +127,29 @@ const AddPost = () => {
         }
     };
 
-    if (!user || loadingTags) return <LoadingSpinner />;
+    if (!user || loadingTags || loadingUserData) return <LoadingSpinner />;
+
+    // 🔹 Check if the user is not a member and has >= 5 posts in MongoDB
+    const hitLimit = actualUserData?.membership === "no" && actualUserData?.posts >= 5;
+
+    if (hitLimit) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[300px] bg-purple-50 rounded shadow p-6 space-y-4">
+                <h2 className="text-xl font-bold text-purple-600 text-center">
+                    You have hit your limit of adding posts.
+                </h2>
+                <p className="text-center text-gray-700">
+                    To add more posts, become a member.
+                </p>
+                <AwesomeButton
+                    type="primary"
+                    onPress={() => navigate("/membership")}
+                >
+                    Go to Membership
+                </AwesomeButton>
+            </div>
+        );
+    }
 
     return (
         <div className="max-w-3xl mx-auto p-6 bg-purple-50 rounded shadow mt-6">
@@ -189,7 +235,6 @@ const AddPost = () => {
                             />
                         )}
                     />
-
                 </div>
 
                 {/* Submit Button */}
@@ -198,7 +243,7 @@ const AddPost = () => {
                     disabled={!imageUploaded || uploading}
                     className="w-full"
                 >
-                    {uploading ? "Uploading..." : "Add Post"}
+                    {uploading ? "Image Uploading..." : "Add Post"}
                 </AwesomeButton>
             </form>
             <ToastContainer position="top-right" autoClose={2000} />

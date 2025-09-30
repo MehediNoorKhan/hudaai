@@ -1,6 +1,15 @@
 import { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../Components/AuthContext";
 import useAxiosSecure from "../Components/useAxiosSecure";
+import { AwesomeButton } from "react-awesome-button";
+import "react-awesome-button/dist/styles.css";
+import { FaTrash, FaCommentDots } from "react-icons/fa";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
+import LoadingSpinner from "../Components/LoadingSpinner";
+import FailedToLoad from "../Components/FailedToLoad";
+
+const MySwal = withReactContent(Swal);
 
 export default function MyPosts() {
     const { user } = useContext(AuthContext);
@@ -8,6 +17,10 @@ export default function MyPosts() {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    // Pagination
+    const [currentPage, setCurrentPage] = useState(1);
+    const postsPerPage = 10;
 
     useEffect(() => {
         if (!user?.email || !axiosSecure) return;
@@ -17,23 +30,13 @@ export default function MyPosts() {
                 setLoading(true);
                 setError(null);
                 const res = await axiosSecure.get(`/myposts/${user.email}`);
-
-                if (res.data.success) {
-                    setPosts(res.data.data);
-                } else {
-                    setError("Failed to fetch posts");
-                }
+                if (res.data.success) setPosts(res.data.data);
+                else setError("Failed to fetch posts");
             } catch (err) {
                 console.error("Error fetching posts:", err);
-
-                // Handle different error types
-                if (err.response?.status === 403) {
-                    setError("Access denied. You can only view your own posts.");
-                } else if (err.response?.status === 401) {
-                    setError("Please log in to access your posts.");
-                } else {
-                    setError("Error loading posts. Please try again.");
-                }
+                if (err.response?.status === 403) setError("Access denied.");
+                else if (err.response?.status === 401) setError("Login required.");
+                else setError("Failed to load posts.");
             } finally {
                 setLoading(false);
             }
@@ -42,144 +45,129 @@ export default function MyPosts() {
         fetchPosts();
     }, [user, axiosSecure]);
 
-    const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    };
-
     const deletePost = async (postId) => {
-        if (!window.confirm('Are you sure you want to delete this post?')) {
-            return;
-        }
+        const result = await MySwal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Yes, delete it!",
+        });
 
-        try {
-            await axiosSecure.delete(`/posts/${postId}`);
-            setPosts(posts.filter(post => post._id !== postId));
-            alert('Post deleted successfully');
-        } catch (err) {
-            console.error('Error deleting post:', err);
-            if (err.response?.status === 403) {
-                alert('Access denied. You can only delete your own posts.');
-            } else {
-                alert('Failed to delete post');
+        if (result.isConfirmed) {
+            try {
+                await axiosSecure.delete(`/posts/${postId}`);
+                setPosts(posts.filter((post) => post._id !== postId));
+                MySwal.fire("Deleted!", "Your post has been deleted.", "success");
+            } catch (err) {
+                console.error(err);
+                MySwal.fire("Error!", "Failed to delete post.", "error");
             }
         }
     };
 
-    if (loading) {
+    if (loading)
         return (
-            <div className="flex justify-center items-center min-h-64">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                    <p className="text-gray-600 mt-2">Loading your posts...</p>
-                </div>
-            </div>
+            <LoadingSpinner></LoadingSpinner>
         );
-    }
 
-    if (error) {
+    if (error)
         return (
-            <div className="max-w-4xl mx-auto mt-6 p-6 bg-red-50 border border-red-200 rounded">
-                <div className="text-center">
-                    <div className="text-red-500 text-4xl mb-4">⚠️</div>
-                    <p className="text-red-800">{error}</p>
-                    <button
-                        onClick={() => window.location.reload()}
-                        className="bg-red-600 text-white px-4 py-2 rounded mt-4 hover:bg-red-700"
-                    >
-                        Try Again
-                    </button>
-                </div>
-            </div>
+            <FailedToLoad></FailedToLoad>
         );
-    }
 
-    if (!posts.length) {
+    if (!posts.length)
         return (
             <div className="max-w-4xl mx-auto mt-6 p-8 bg-white shadow rounded text-center">
                 <h2 className="text-2xl font-bold mb-4">My Posts</h2>
-                <div className="text-gray-500">
-                    <svg className="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <p className="text-lg">No posts found</p>
-                    <p className="text-sm mt-2">You haven't created any posts yet.</p>
-                    <button
-                        onClick={() => window.location.href = '/dashboard/addpost'}
-                        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                    >
-                        Create Your First Post
-                    </button>
-                </div>
+                <p className="text-gray-500 text-lg">No posts found</p>
+                <AwesomeButton
+                    type="primary"
+                    className="mt-4 cursor-pointer"
+                    onPress={() => (window.location.href = "/dashboard/addpost")}
+                >
+                    Create Post
+                </AwesomeButton>
             </div>
         );
-    }
 
-    // Rest of your existing component JSX remains the same...
+    // Pagination logic
+    const indexOfLastPost = currentPage * postsPerPage;
+    const indexOfFirstPost = indexOfLastPost - postsPerPage;
+    const currentPosts = posts.slice(indexOfFirstPost, indexOfLastPost);
+    const totalPages = Math.ceil(posts.length / postsPerPage);
+
     return (
-        <div className="max-w-6xl mx-auto mt-6 p-6 bg-white shadow rounded">
-            <div className="flex justify-between items-center mb-6">
-                <div>
-                    <h2 className="text-2xl font-bold">My Posts</h2>
-                    <p className="text-gray-600">{posts.length} posts found</p>
-                </div>
-                <div className="text-sm text-gray-500">
-                    Signed in as: {user?.email}
-                </div>
-            </div>
+        <div className="max-w-6xl mx-auto mt-6 p-6 bg-gray-50 shadow rounded">
+            <h2 className="text-2xl font-bold mb-6">My Posts</h2>
 
             <div className="overflow-x-auto">
-                <table className="w-full border-collapse border border-gray-200">
-                    <thead>
-                        <tr className="bg-gray-100">
-                            <th className="border border-gray-200 p-3 text-left">Post Title</th>
-                            <th className="border border-gray-200 p-3 text-center">Number of Votes</th>
-                            <th className="border border-gray-200 p-3 text-center">Comment</th>
-                            <th className="border border-gray-200 p-3 text-center">Delete</th>
+                <table className="w-full border-collapse border border-gray-300 bg-white rounded-lg">
+                    <thead className="bg-blue-100">
+                        <tr>
+                            <th className="p-3 text-left">Title</th>
+                            <th className="p-3 text-center">Votes</th>
+                            <th className="p-3 text-center">Comment</th>
+                            <th className="p-3 text-center">Delete</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {posts.map((post) => (
-                            <tr key={post._id} className="hover:bg-gray-50">
-                                <td className="border border-gray-200 p-3">
-                                    <h3 className="font-semibold text-gray-900">
-                                        {post.postTitle}
-                                    </h3>
+                        {currentPosts.map((post) => (
+                            <tr
+                                key={post._id}
+                                className="hover:bg-blue-50 transition" // removed cursor-pointer
+                            >
+                                <td className="p-3 font-semibold text-gray-900">{post.postTitle}</td>
+                                <td className="p-3 text-center font-medium">
+                                    {(post.upVote || 0) - (post.downVote || 0)}
                                 </td>
-                                <td className="border border-gray-200 p-3 text-center">
-                                    <span className="font-medium text-lg">
-                                        {(post.upVote || 0) - (post.downVote || 0)}
-                                    </span>
+                                <td className="p-3 text-center">
+                                    <div className="inline-block">
+                                        <AwesomeButton
+                                            type="primary"
+                                            size="small"
+                                            onPress={() =>
+                                                (window.location.href = `/dashboard/posts/${post._id}`)
+                                            }
+                                        >
+                                            <FaCommentDots className="mr-1" /> Comment
+                                        </AwesomeButton>
+                                    </div>
                                 </td>
-                                <td className="border border-gray-200 p-3 text-center">
-                                    <button
-                                        onClick={() => window.location.href = `/dashboard/posts/${post._id}`}
-                                        className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 transition-colors"
-                                    >
-                                        Comment
-                                    </button>
-                                </td>
-                                <td className="border border-gray-200 p-3 text-center">
-                                    <button
-                                        onClick={() => deletePost(post._id)}
-                                        className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors"
-                                    >
-                                        Delete
-                                    </button>
+                                <td className="p-3 text-center">
+                                    <div className="inline-block">
+                                        <AwesomeButton
+                                            type="danger"
+                                            size="small"
+                                            onPress={() => deletePost(post._id)}
+                                        >
+                                            <FaTrash className="mr-1" /> Delete
+                                        </AwesomeButton>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
                     </tbody>
+
                 </table>
             </div>
 
-            <div className="mt-4 text-sm text-gray-500 text-center">
-                Showing all {posts.length} of your posts
+            {/* Pagination */}
+            <div className="flex justify-center gap-2 mt-4">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`px-3 py-1 rounded ${page === currentPage
+                            ? "bg-blue-500 text-white"
+                            : "bg-gray-200 text-gray-700 hover:bg-blue-300"
+                            } cursor-pointer`}
+                    >
+                        {page}
+                    </button>
+                ))}
             </div>
         </div>
     );

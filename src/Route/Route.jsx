@@ -51,6 +51,7 @@ export const router = createBrowserRouter([
             { path: "profile", element: <UserRoute><DashboardProfile /></UserRoute> },
             { path: "addpost", element: <UserRoute><AddPost /></UserRoute> },
             { path: "myposts", element: <UserRoute><MyPosts /></UserRoute> },
+            { path: "posts/:id", element: <UserRoute><PostComments></PostComments></UserRoute> },
 
             // Admin routes
             { path: "adminhome", element: <AdminRoute><AdminHome></AdminHome></AdminRoute> },

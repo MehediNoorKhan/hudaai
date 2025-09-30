@@ -88,7 +88,7 @@ export default function CheckoutForm() {
             <button
                 type="submit"
                 disabled={!stripe || !clientSecret || loading}
-                className={`px-6 py-2 rounded bg-purple-600 text-white font-semibold ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+                className={`px-6 py-2 rounded bg-purple-600 text-white cursor-pointer font-semibold ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
             >
                 {loading ? "Processing..." : "Pay $10"}
             </button>

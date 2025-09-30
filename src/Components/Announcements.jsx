@@ -1,6 +1,8 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import LoadingSpinner from "./LoadingSpinner";
+import FailedToLoad from "./FailedToLoad";
 
 export default function Announcements() {
     const fetchAnnouncements = async () => {
@@ -14,15 +16,15 @@ export default function Announcements() {
         staleTime: 1000 * 60 * 5, // cache for 5 minutes
     });
 
-    if (isLoading) return <p className="text-center mt-6">Loading announcements...</p>;
-    if (isError) return <p className="text-center mt-6 text-red-500">Failed to load announcements.</p>;
+    if (isLoading) return <LoadingSpinner></LoadingSpinner>;
+    if (isError) return <FailedToLoad></FailedToLoad>;
     if (announcements.length === 0) return <p className="text-center mt-6"></p>;
 
     return (
-        <div className="max-w-4xl mx-auto mt-6 space-y-6">
-            <h2 className="text-2xl font-bold text-center mb-4">Announcements</h2>
+        <div className="max-w-4xl mx-auto my-6 py-4 space-y-6">
+            <h2 className="text-4xl font-bold text-center text-purple-500 mb-8 mt-4">Announcements</h2>
             {announcements.map((a) => (
-                <div key={a._id} className="bg-white rounded-lg shadow-md p-4">
+                <div key={a._id} className="bg-green-50 rounded-lg shadow-md p-4">
                     <div className="flex items-center gap-3 mb-3">
                         <img
                             src={a.authorImage || "/default-avatar.png"}
