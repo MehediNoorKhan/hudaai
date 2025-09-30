@@ -11,6 +11,7 @@ import {
     FaFlag,
 } from "react-icons/fa";
 import { useAuth } from "../Components/AuthContext";
+import LoadingSpinner from "../Components/LoadingSpinner";
 
 export default function DashboardLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -35,10 +36,7 @@ export default function DashboardLayout() {
 
     if (loading) {
         return (
-            <div className="flex h-screen bg-gray-100 items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-                <p className="ml-4">Loading authentication...</p>
-            </div>
+            <LoadingSpinner></LoadingSpinner>
         );
     }
 
