@@ -28,18 +28,21 @@ const TagBadges = () => {
     if (isError) return <p className="text-center mt-4 text-red-500">Failed to load tags</p>;
 
     return (
-        <div className="flex flex-wrap gap-2 max-w-7xl mx-auto">
-            {tags.map((tag, index) => {
-                const colorClass = colors[index % colors.length];
-                return (
-                    <span
-                        key={tag._id || tag.name}
-                        className={`text-white px-3 py-1 rounded-full ${colorClass} text-sm`}
-                    >
-                        {tag.name}
-                    </span>
-                );
-            })}
+        <div>
+            <h3 className="text-center text-4xl font-bold text-gray-600 py-8">Choose a Tag to search</h3>
+            <div className="flex flex-row gap-6 max-w-xl flex-wrap mx-auto p-4 justify-center items-center">
+                {tags.map((tag, index) => {
+                    const colorClass = colors[index % colors.length];
+                    return (
+                        <span
+                            key={tag._id || tag.name}
+                            className={`text-white px-4 py-2 rounded-3xl ${colorClass} text-md text-center`}
+                        >
+                            {tag.name}
+                        </span>
+                    );
+                })}
+            </div>
         </div>
     );
 };

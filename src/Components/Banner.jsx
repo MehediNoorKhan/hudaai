@@ -1,83 +1,155 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router";
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
+import { AwesomeButton } from "react-awesome-button";
+import "react-awesome-button/dist/styles.css";
+import LoadingSpinner from "../Components/LoadingSpinner";
+import { FaThumbsUp, FaThumbsDown, FaComment } from "react-icons/fa";
 
 export default function Banner() {
     const [searchTerm, setSearchTerm] = useState("");
-    const [searchedTerm, setSearchedTerm] = useState(""); // Only set when search button is clicked
+    const [searchedTerm, setSearchedTerm] = useState("");
     const [results, setResults] = useState([]);
-    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    const handleSearch = async (e) => {
+    const searchMutation = useMutation({
+        mutationFn: async (tag) => {
+            const { data } = await axios.post(
+                `${import.meta.env.VITE_API_URL}/posts/search`,
+                { tag }
+            );
+            return data.posts || [];
+        },
+        onSuccess: (data) => setResults(data),
+        onError: () => setResults([]),
+    });
+
+    const handleSearch = (e) => {
         e.preventDefault();
         const trimmed = searchTerm.trim();
         if (!trimmed) return;
+        setSearchedTerm(trimmed);
+        searchMutation.mutate(trimmed);
+    };
 
-        setLoading(true);
-        setSearchedTerm(trimmed); // ✅ Only update when search is submitted
-
-        try {
-            const { data } = await axios.post(
-                `${import.meta.env.VITE_API_URL}/posts/search`,
-                { tag: trimmed }
-            );
-            setResults(data.posts || []);
-        } catch (err) {
-            console.error("Search error:", err);
-            setResults([]);
-        } finally {
-            setLoading(false);
-        }
+    // Dummy handlers (replace with real vote logic)
+    const handleVote = (id, type) => {
+        console.log(`Voted ${type} on post ${id}`);
     };
 
     return (
-        <div className="w-full p-6 bg-gradient-to-r from-purple-400 via-pink-400 to-red-400 text-white">
+        <div className="w-full p-6 bg-[#F9F1EC] text-gray-800">
             {/* Banner Content */}
             <div className="max-w-4xl mx-auto text-center space-y-4">
-                <h1 className="text-4xl font-bold">Welcome to ConvoNest</h1>
-                <p className="text-lg">Search posts by tag to find what you’re interested in.</p>
+                <h1 className="text-4xl font-bold text-gray-900">Welcome to ConvoNest</h1>
+                <p className="text-lg text-gray-700">
+                    Search posts by tag to find what you’re interested in.
+                </p>
 
                 {/* Search Bar */}
                 <form onSubmit={handleSearch} className="flex justify-center mt-4 gap-2">
                     <input
                         type="text"
                         placeholder="Search by tag..."
-                        className="px-4 py-2 rounded-l text-black w-1/2"
+                        className="px-4 py-2 rounded-l text-black w-1/2 border border-gray-300"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
-                    <button
-                        type="submit"
-                        className="px-4 py-2 bg-white text-purple-600 font-bold rounded-r hover:bg-gray-100"
+                    <AwesomeButton
+                        type="primary"
+                        className="rounded-r"
+                        style={{
+                            "--button-primary-color": "#3b82f6",
+                            "--button-primary-color-dark": "#1d4ed8",
+                            "--button-primary-color-hover": "#2563eb",
+                            "--button-primary-color-active": "#1e40af",
+                            "--button-primary-border": "none",
+                        }}
                     >
                         Search
-                    </button>
+                    </AwesomeButton>
                 </form>
             </div>
 
             {/* Search Results */}
-            <div className="max-w-4xl mx-auto mt-6">
-                {loading && <p className="text-white">Loading...</p>}
-
-                {/* Show this only after search button is clicked */}
-                {!loading && results.length === 0 && searchedTerm && (
-                    <p className="text-white text-center">
-                        No posts found for "{searchedTerm}"
-                    </p>
+            <div className="max-w-7xl mx-auto mt-6">
+                {searchMutation.isLoading && (
+                    <div className="flex justify-center">
+                        <LoadingSpinner />
+                    </div>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                {!searchMutation.isLoading &&
+                    results.length === 0 &&
+                    searchedTerm && (
+                        <p className="text-gray-600 text-center">
+                            No posts found for "{searchedTerm}"
+                        </p>
+                    )}
+
+                <div className="flex flex-row justify-center items-center flex-wrap gap-6 mt-4">
                     {results.map((post) => (
                         <div
                             key={post._id}
-                            className="bg-white text-black p-4 rounded shadow cursor-pointer hover:shadow-lg"
-                            onClick={() => navigate(`/postdetails/${post._id}`)}
+                            className="bg-white rounded-lg shadow-md p-4 cursor-pointer hover:shadow-xl transition w-[300px] h-[300px] flex flex-col justify-between"
+                            onClick={(e) => {
+                                if (
+                                    e.target.closest(".vote-btn") ||
+                                    e.target.closest(".comment-btn")
+                                )
+                                    return;
+                                navigate(`/postdetails/${post._id}`);
+                            }}
                         >
-                            <h3 className="font-bold text-lg mb-2">{post.postTitle}</h3>
-                            <p className="text-sm mb-2">{post.postDescription}</p>
-                            <p className="text-xs text-gray-500">#{post.tag}</p>
+                            {/* Top content */}
+                            <div>
+                                {/* Author Info */}
+                                <div className="flex items-center mb-3">
+                                    <img
+                                        src={post.authorImage || "/default-avatar.png"}
+                                        alt={post.authorName || "Unknown"}
+                                        className="w-10 h-10 rounded-full mr-3 object-cover"
+                                    />
+                                    <div>
+                                        <p className="font-semibold">{post.authorName || "Unknown"}</p>
+                                        <p className="text-gray-500 text-sm">
+                                            {new Date(post.creation_time).toLocaleString()}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Post Content */}
+                                <h3 className="text-lg font-bold mb-2">{post.postTitle || ""}</h3>
+                                <p className="text-gray-700 mb-3">{post.postDescription || ""}</p>
+                                <p className="inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm mb-3">
+                                    #{post.tag || ""}
+                                </p>
+                            </div>
+
+                            {/* Bottom actions */}
+                            <div className="flex items-center gap-4 mt-2">
+                                <button
+                                    onClick={() => handleVote(post._id, "upvote")}
+                                    className="vote-btn flex items-center gap-1 text-gray-600 hover:text-green-600 transition"
+                                >
+                                    <FaThumbsUp /> {post.upVote}
+                                </button>
+                                <button
+                                    onClick={() => handleVote(post._id, "downvote")}
+                                    className="vote-btn flex items-center gap-1 text-gray-600 hover:text-red-600 transition"
+                                >
+                                    <FaThumbsDown /> {post.downVote}
+                                </button>
+                                <button
+                                    onClick={() => navigate(`/postdetails/${post._id}`)}
+                                    className="comment-btn flex items-center gap-1 text-gray-500 hover:text-blue-600 transition"
+                                >
+                                    <FaComment /> {post.comments?.length || 0}
+                                </button>
+                            </div>
                         </div>
+
                     ))}
                 </div>
             </div>
