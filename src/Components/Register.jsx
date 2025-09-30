@@ -43,7 +43,10 @@ const Register = () => {
                     .then((userCredential) => {
                         const user = userCredential.user;
 
-                        // Update Firebase profile
+                        // Immediately sign out so the user is not logged in automatically
+                        auth.signOut();
+
+                        // Update Firebase profile (optional, you can still update)
                         updateUserProfile(fullName, imageUrl)
                             .then(() => {
                                 const userData = {
@@ -57,6 +60,7 @@ const Register = () => {
                                     posts: 0,
                                 };
 
+                                // Save user in your DB
                                 axios
                                     .post(`${import.meta.env.VITE_API_URL}/users`, userData)
                                     .then(() => {

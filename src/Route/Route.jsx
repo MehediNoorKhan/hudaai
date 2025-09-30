@@ -20,6 +20,10 @@ import { Component } from "react";
 import Forbidden from "../Components/Forbidden";
 import AdminRoute from "../Components/AdminRoute";
 import AdminProfile from "../Dashboard/AdminProfile";
+import Membership from "../Components/Membership";
+import UserHome from "../Dashboard/UserHome";
+import RoleBasedRedirect from "../Dashboard/RoleBasedRedirect";
+import AdminHome from "../Dashboard/AdminHome";
 
 export const router = createBrowserRouter([
     {
@@ -30,6 +34,7 @@ export const router = createBrowserRouter([
             { path: "register", Component: Register },
             { path: "login", Component: Login },
             { path: "postdetails/:id", Component: PostDetails },
+            { path: "membership", Component: Membership },
             { path: "forbidden", Component: Forbidden }
 
         ],
@@ -38,20 +43,24 @@ export const router = createBrowserRouter([
         path: "/dashboard",
         Component: DashboardLayout,
         children: [
-            { index: true, Component: DashboardHome }, // default: /dashboard
-            {
-                path: "profile",
-                element: <UserRoute><DashboardProfile /></UserRoute>
-            }, // /dashboard/profile
-            { path: "addpost", element: <UserRoute><AddPost></AddPost></UserRoute> },
-            { path: "myposts", element: <UserRoute><MyPosts></MyPosts></UserRoute> },
-            { path: "manageusers", element: <AdminRoute><ManageUsers></ManageUsers></AdminRoute> },
-            { path: "posts/:id", element: <UserRoute><PostComments></PostComments></UserRoute> },
-            { path: "adminprofile", element: <AdminRoute><AdminProfile></AdminProfile></AdminRoute> },
-            { path: "addannouncement", element: <AdminRoute><AddAnnouncement></AddAnnouncement></AdminRoute> },
-            { path: "reportedcomments", element: <AdminRoute><ReportedComments></ReportedComments></AdminRoute> }
+            // default redirect based on role
+            { index: true, element: <RoleBasedRedirect /> },
 
+            // User routes
+            { path: "userhome", element: <UserRoute><UserHome /></UserRoute> },
+            { path: "profile", element: <UserRoute><DashboardProfile /></UserRoute> },
+            { path: "addpost", element: <UserRoute><AddPost /></UserRoute> },
+            { path: "myposts", element: <UserRoute><MyPosts /></UserRoute> },
+
+            // Admin routes
+            { path: "adminhome", element: <AdminRoute><AdminHome></AdminHome></AdminRoute> },
+            { path: "adminprofile", element: <AdminRoute><AdminProfile /></AdminRoute> },
+            { path: "manageusers", element: <AdminRoute><ManageUsers /></AdminRoute> },
+            { path: "addannouncement", element: <AdminRoute><AddAnnouncement /></AdminRoute> },
+            { path: "reportedcomments", element: <AdminRoute><ReportedComments /></AdminRoute> },
         ]
-    },
+    }
+
+
     // Add more dashboard nested routes here
 ]);

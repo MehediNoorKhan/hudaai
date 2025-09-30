@@ -1,71 +1,3 @@
-// import React, { useEffect, useState } from "react";
-// import {
-//     createUserWithEmailAndPassword,
-//     GoogleAuthProvider,
-//     onAuthStateChanged,
-//     signInWithEmailAndPassword,
-//     signInWithPopup,
-//     signOut,
-//     updateProfile,
-// } from "firebase/auth";
-// import { auth } from "../Firebase.config.init";
-// import { AuthContext } from "./AuthContext";
-
-// const AuthProvider = ({ children }) => {
-//     const [user, setUser] = useState(null);
-//     const [loading, setLoading] = useState(true);
-//     const googleProvider = new GoogleAuthProvider();
-
-//     const createUser = (email, password) => {
-//         setLoading(true);
-//         return createUserWithEmailAndPassword(auth, email, password)
-//             .finally(() => setLoading(false));
-//     };
-
-//     const googleLogin = () => {
-//         return signInWithPopup(auth, googleProvider);
-//     };
-
-//     const updateUserProfile = (name, photoURL) => {
-//         if (auth.currentUser) {
-//             return updateProfile(auth.currentUser, { displayName: name, photoURL });
-//         }
-//         return Promise.reject(new Error("No user is logged in"));
-//     };
-
-//     const login = (email, password) => {
-//         return signInWithEmailAndPassword(auth, email, password);
-//     };
-
-//     const logOut = () => {
-//         setUser(null);
-//         return signOut(auth);
-//     };
-
-//     useEffect(() => {
-//         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-//             setUser(currentUser ? { ...currentUser, email: currentUser.email?.toLowerCase() } : null);
-//             setLoading(false);
-//         });
-//         return () => unsubscribe();
-//     }, []);
-
-//     const authInfo = {
-//         user,
-//         loading,
-//         createUser,
-//         updateUserProfile,
-//         googleLogin,
-//         login,
-//         logOut,
-//     };
-
-//     return <AuthContext.Provider value={authInfo}>{children}</AuthContext.Provider>;
-// };
-
-// export default AuthProvider;
-
-
 // Updated AuthProvider.js - Add role management
 import React, { useEffect, useState } from "react";
 import {
@@ -94,8 +26,20 @@ const AuthProvider = ({ children }) => {
             .finally(() => setLoading(false));
     };
 
-    const googleLogin = () => {
-        return signInWithPopup(auth, googleProvider);
+    const googleLogin = async () => {
+        const result = await signInWithPopup(auth, googleProvider);
+
+        // Fetch JWT from backend
+        try {
+            const res = await axiosSecure.post("/jwt", { email: result.user.email });
+            const token = res.data.token;
+            localStorage.setItem("access-token", token); // store JWT
+            console.log("JWT stored:", token);
+        } catch (err) {
+            console.error("Failed to fetch JWT:", err);
+        }
+
+        return result;
     };
 
     const updateUserProfile = (name, photoURL) => {
@@ -105,8 +49,20 @@ const AuthProvider = ({ children }) => {
         return Promise.reject(new Error("No user is logged in"));
     };
 
-    const login = (email, password) => {
-        return signInWithEmailAndPassword(auth, email, password);
+    const login = async (email, password) => {
+        const result = await signInWithEmailAndPassword(auth, email, password);
+
+        // Fetch JWT from backend
+        try {
+            const res = await axiosSecure.post("/jwt", { email: result.user.email });
+            const token = res.data.token;
+            localStorage.setItem("access-token", token); // store JWT in localStorage
+            console.log("JWT stored:", token);
+        } catch (err) {
+            console.error("Failed to fetch JWT:", err);
+        }
+
+        return result;
     };
 
     const logOut = () => {
@@ -166,6 +122,28 @@ const AuthProvider = ({ children }) => {
         return () => unsubscribe();
     }, [axiosSecure]);
 
+    // useEffect(() => {
+    //     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    //         if (currentUser) {
+    //             setUser({ ...currentUser, email: currentUser.email.toLowerCase() });
+    //             try {
+    //                 const res = await axiosSecure.get(`/users/role/${currentUser.email}`);
+    //                 setRole(res.data.role); // 'user' or 'admin'
+    //             } catch (err) {
+    //                 console.error("Error fetching user role:", err);
+    //                 setRole(null);
+    //             }
+    //         } else {
+    //             setUser(null);
+    //             setRole(null);
+    //         }
+    //         setLoading(false);
+    //     });
+
+    //     return () => unsubscribe();
+    // }, []);
+
+
     const authInfo = {
         user,
         role,        // Add role to context
@@ -182,3 +160,4 @@ const AuthProvider = ({ children }) => {
 };
 
 export default AuthProvider;
+

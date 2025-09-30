@@ -4,6 +4,7 @@ import { AuthContext } from "./AuthContext";
 import SocialLogin from "./SocialLogin";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import axiosSecure from "./axiosSecure"; // use the instance, not a function
 
 const Login = () => {
     const { login } = useContext(AuthContext);
@@ -18,19 +19,33 @@ const Login = () => {
         setLoading(true);
 
         try {
-            await login(email, password);
-            toast.success("Logged in successfully!", {
-                position: "top-right",
-                autoClose: 2000,
-            });
-            setEmail("");
-            setPassword("");
-            navigate("/"); // redirect after login
+            // Firebase login
+            const userCredential = await login(email, password);
+            const user = userCredential.user;
+
+            // Request JWT from backend
+            const res = await axiosSecure.post("/jwt", { email: user.email });
+            const token = res.data.token;
+
+            if (token) {
+                // Store JWT in localStorage
+                localStorage.setItem("access-token", token);
+
+                toast.success("Logged in successfully!", {
+                    position: "top-right",
+                    autoClose: 2000,
+                });
+
+                setEmail("");
+                setPassword("");
+                navigate("/"); // redirect after login
+            }
         } catch (error) {
             toast.error(`Login failed: ${error.message}`, {
                 position: "top-right",
                 autoClose: 3000,
             });
+            console.error("Login error:", error);
         } finally {
             setLoading(false);
         }
@@ -38,18 +53,7 @@ const Login = () => {
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-base-200">
-            {/* Place ToastContainer once per page or app */}
-            <ToastContainer
-                position="top-right"
-                autoClose={2000}
-                hideProgressBar={false}
-                newestOnTop
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-            />
+            <ToastContainer />
             <div className="w-full max-w-md p-8 space-y-6 bg-base-100 rounded-lg shadow-md">
                 <h2 className="text-2xl font-bold text-center text-gray-800">Login</h2>
 
@@ -87,6 +91,7 @@ const Login = () => {
                     </button>
                 </form>
 
+                {/* Social Login also uses JWT */}
                 <SocialLogin />
 
                 <p className="text-sm text-center text-gray-500 mt-4">
