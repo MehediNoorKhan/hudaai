@@ -76,19 +76,20 @@ export default function AdminHome() {
             </div>
 
             {/* Tailwind keyframes for animations */}
-            <style jsx>{`
-        @keyframes fadeIn {
-          0% { opacity: 0; transform: translateY(20px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fadeIn { animation: fadeIn 0.5s ease forwards; }
+            <style>{`
+  @keyframes fadeIn {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fadeIn { animation: fadeIn 0.5s ease forwards; }
 
-        @keyframes slideUp {
-          0% { opacity: 0; transform: translateY(40px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-        .animate-slideUp { animation: slideUp 0.6s ease forwards; }
-      `}</style>
+  @keyframes slideUp {
+    0% { opacity: 0; transform: translateY(40px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  .animate-slideUp { animation: slideUp 0.6s ease forwards; }
+`}</style>
+
         </div>
     );
 }

@@ -125,7 +125,7 @@ export default function ReportedComments() {
             </div>
 
             {/* Animations */}
-            <style jsx>{`
+            <style>{`
         @keyframes fadeIn {
           0% {
             opacity: 0;
