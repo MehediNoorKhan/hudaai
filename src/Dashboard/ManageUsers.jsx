@@ -33,7 +33,7 @@ export default function ManageUsers() {
     }, [axiosSecure]);
 
     const makeAdmin = async (userId, userName) => {
-        // Show confirmation dialog
+
         const result = await Swal.fire({
             title: "Make Admin?",
             text: `Are you sure you want to make ${userName} an admin?`,
