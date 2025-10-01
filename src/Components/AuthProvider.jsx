@@ -28,11 +28,17 @@ const AuthProvider = ({ children }) => {
 
     const googleLogin = async () => {
         const result = await signInWithPopup(auth, googleProvider);
+        const firebaseUser = result.user;
+
+        // Normalize user
+        const normalizedUser = {
+            ...firebaseUser,
+            email: firebaseUser.email?.toLowerCase(),
+        };
 
         // Fetch JWT from backend
         try {
-            setUser(user);
-            const res = await axiosSecure.post("/jwt", { email: result.user.email });
+            const res = await axiosSecure.post("/jwt", { email: normalizedUser.email });
             const token = res.data.token;
             localStorage.setItem("access-token", token); // store JWT
             console.log("JWT stored:", token);
@@ -40,8 +46,12 @@ const AuthProvider = ({ children }) => {
             console.error("Failed to fetch JWT:", err);
         }
 
+        // Set user AFTER JWT is stored
+        setUser(normalizedUser);
+
         return result;
     };
+
 
     const updateUserProfile = (name, photoURL) => {
         if (auth.currentUser) {
