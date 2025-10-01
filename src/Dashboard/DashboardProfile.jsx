@@ -6,7 +6,6 @@ import "react-toastify/dist/ReactToastify.css";
 import { AwesomeButton } from "react-awesome-button";
 import "react-awesome-button/dist/styles.css";
 import { FaRegCalendarAlt, FaRegClock, FaThumbsUp, FaThumbsDown, FaRegCommentDots } from "react-icons/fa";
-import { motion } from "framer-motion";
 import CountUp from "react-countup";
 import LoadingSpinner from "../Components/LoadingSpinner";
 import FailedToLoad from "../Components/FailedToLoad";
