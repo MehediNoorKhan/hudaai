@@ -51,22 +51,24 @@ export default function DashboardProfile() {
                 setProfile((prev) => ({ ...prev, aboutMe: res.data.aboutMe }));
                 setAboutMeEdit(false);
                 toast.success("About Me updated successfully!");
-            } else toast.error("Failed to update About Me.");
+            } else {
+                toast.error("Failed to update About Me.");
+            }
         } catch (err) {
             console.error(err);
             toast.error("Failed to update About Me.");
         }
     };
 
-    if (loading) return <LoadingSpinner></LoadingSpinner>;
-    if (error) return <FailedToLoad></FailedToLoad>;
+    if (loading) return <LoadingSpinner />;
+    if (error) return <FailedToLoad />;
     if (!profile) return <p className="text-center mt-10 text-yellow-600">Profile not found</p>;
 
     return (
         <div className="p-6 max-w-5xl mx-auto bg-gradient-to-b from-blue-50 to-white rounded-lg shadow-xl space-y-6">
             <ToastContainer position="top-right" autoClose={2000} />
 
-            {/* User Info with animated avatar */}
+            {/* User Info */}
             <div className="text-center">
                 <motion.img
                     src={profile.avatar || "/default-avatar.png"}
@@ -76,6 +78,11 @@ export default function DashboardProfile() {
                 />
                 <h2 className="text-3xl font-bold text-gray-800">{profile.fullName}</h2>
                 <p className="text-gray-600 mt-1">{profile.email}</p>
+                {profile.user_status && (
+                    <span className="inline-block mt-2 px-3 py-1 text-sm font-semibold text-white bg-green-500 rounded-full">
+                        {profile.user_status}
+                    </span>
+                )}
             </div>
 
             {/* About Me Section */}
@@ -101,7 +108,7 @@ export default function DashboardProfile() {
                             rows={4}
                         />
                         <div className="flex gap-3">
-                            <AwesomeButton type="primary" size="medium" onPress={handleAboutMeSave} className="cursor-pointer">
+                            <AwesomeButton type="primary" size="medium" className="cursor-pointer">
                                 Save
                             </AwesomeButton>
                             <AwesomeButton
@@ -123,7 +130,7 @@ export default function DashboardProfile() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <motion.div
                     className="bg-white p-5 rounded-lg text-center shadow hover:shadow-lg transition cursor-pointer"
                     initial={{ opacity: 0, y: 20 }}
@@ -147,21 +154,9 @@ export default function DashboardProfile() {
                     </div>
                     <div className="text-gray-600 mt-1">Posts Count</div>
                 </motion.div>
-
-                <motion.div
-                    className="bg-white p-5 rounded-lg text-center shadow hover:shadow-lg transition cursor-pointer"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.4 }}
-                >
-                    <div className="text-3xl font-bold text-purple-600">
-                        <CountUp end={profile.user_status || 0} duration={1.5} />
-                    </div>
-                    <div className="text-gray-600 mt-1">Status</div>
-                </motion.div>
             </div>
 
-            {/* Recent Posts with slide-in animation */}
+            {/* Recent Posts */}
             <div>
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-xl font-semibold text-gray-800">Recent Posts</h3>
@@ -182,7 +177,9 @@ export default function DashboardProfile() {
                                 transition={{ duration: 0.5, delay: index * 0.1 }}
                             >
                                 <div className="flex justify-between items-start mb-2">
-                                    <h4 className="font-semibold text-lg text-gray-800 line-clamp-1">{post.postTitle || post.title}</h4>
+                                    <h4 className="font-semibold text-lg text-gray-800 line-clamp-1">
+                                        {post.postTitle || post.title}
+                                    </h4>
                                     {post.tag && (
                                         <span className="inline-block px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700 ml-2">
                                             {post.tag}
@@ -190,7 +187,9 @@ export default function DashboardProfile() {
                                     )}
                                 </div>
 
-                                <p className="text-gray-600 text-sm mb-3 line-clamp-2">{post.postDescription || post.description}</p>
+                                <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                                    {post.postDescription || post.description}
+                                </p>
 
                                 <div className="flex justify-between items-center text-xs text-gray-500">
                                     <div className="flex items-center gap-4">

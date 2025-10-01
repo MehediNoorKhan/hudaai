@@ -20,18 +20,29 @@ export default function ReportedComments() {
 
         try {
             const res = await axiosSecure.get("/reports?status=pending");
+
             if (res.data.success) {
                 const reportData = await Promise.all(
                     res.data.data.map(async (report) => {
-                        const commentRes = await axiosSecure.get(`/comments/${report.commentId}`);
-                        const commentData = commentRes.data?.data || {};
+                        let commentData = {};
+                        try {
+                            const commentRes = await axiosSecure.get(`/comments/${report.commentId}`);
+                            commentData = commentRes.data?.data || {};
+                        } catch (err) {
+                            console.warn(`Failed to fetch comment ${report.commentId}:`, err);
+                        }
+
                         return {
                             ...report,
                             commenterName: commentData.commenterName || "Unknown",
                             commentText: commentData.comment || "N/A",
+                            status: report.status || "pending",
+                            feedback: report.feedback || "-",
+                            reporterEmail: report.reporterEmail || "Unknown",
                         };
                     })
                 );
+
                 setReports(reportData);
             } else {
                 setError("Failed to fetch reports");
@@ -107,7 +118,7 @@ export default function ReportedComments() {
                                 <td className="border border-gray-200 p-3">{report.reporterEmail}</td>
                                 <td className="border border-gray-200 p-3">{report.feedback}</td>
                                 <td className="border border-gray-200 p-3">
-                                    {new Date(report.reportedAt).toLocaleString()}
+                                    {report.reportedAt ? new Date(report.reportedAt).toLocaleString() : "N/A"}
                                 </td>
                                 <td className="border border-gray-200 p-3 capitalize">{report.status}</td>
                                 <td className="border border-gray-200 p-3">
@@ -127,18 +138,10 @@ export default function ReportedComments() {
             {/* Animations */}
             <style>{`
         @keyframes fadeIn {
-          0% {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          0% { opacity: 0; transform: translateY(20px); }
+          100% { opacity: 1; transform: translateY(0); }
         }
-        .animate-fadeIn {
-          animation: fadeIn 0.5s ease forwards;
-        }
+        .animate-fadeIn { animation: fadeIn 0.5s ease forwards; }
       `}</style>
         </div>
     );
