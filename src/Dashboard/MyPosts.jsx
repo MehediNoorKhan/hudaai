@@ -30,7 +30,7 @@ export default function MyPosts() {
                 setLoading(true);
                 setError(null);
                 const res = await axiosSecure.get(`/myposts/${user.email}`);
-                if (res.data.success) setPosts(res.data.data);
+                if (res.data.success) setPosts(res.data.data || []);
                 else setError("Failed to fetch posts");
             } catch (err) {
                 console.error("Error fetching posts:", err);
@@ -68,16 +68,8 @@ export default function MyPosts() {
         }
     };
 
-    if (loading)
-        return (
-            <LoadingSpinner></LoadingSpinner>
-        );
-
-    if (error)
-        return (
-            <FailedToLoad></FailedToLoad>
-        );
-
+    if (loading) return <LoadingSpinner />;
+    if (error) return <FailedToLoad />;
     if (!posts.length)
         return (
             <div className="max-w-4xl mx-auto mt-6 p-8 bg-white shadow rounded text-center">
@@ -114,17 +106,15 @@ export default function MyPosts() {
                         </tr>
                     </thead>
                     <tbody>
-                        {currentPosts.map((post) => (
-                            <tr
-                                key={post._id}
-                                className="hover:bg-blue-50 transition" // removed cursor-pointer
-                            >
-                                <td className="p-3 font-semibold text-gray-900">{post.postTitle}</td>
-                                <td className="p-3 text-center font-medium">
-                                    {(post.upVote || 0) - (post.downVote || 0)}
-                                </td>
-                                <td className="p-3 text-center">
-                                    <div className="inline-block">
+                        {currentPosts.map((post, index) => {
+                            const safeTitle = post.postTitle || "Untitled Post"; // Prevent null
+                            const votes = (post.upVote || 0) - (post.downVote || 0);
+
+                            return (
+                                <tr key={post._id || index} className="hover:bg-blue-50 transition">
+                                    <td className="p-3 font-semibold text-gray-900">{safeTitle}</td>
+                                    <td className="p-3 text-center font-medium">{votes}</td>
+                                    <td className="p-3 text-center">
                                         <AwesomeButton
                                             type="primary"
                                             size="small"
@@ -134,10 +124,8 @@ export default function MyPosts() {
                                         >
                                             <FaCommentDots className="mr-1" /> Comment
                                         </AwesomeButton>
-                                    </div>
-                                </td>
-                                <td className="p-3 text-center">
-                                    <div className="inline-block">
+                                    </td>
+                                    <td className="p-3 text-center">
                                         <AwesomeButton
                                             type="danger"
                                             size="small"
@@ -145,12 +133,11 @@ export default function MyPosts() {
                                         >
                                             <FaTrash className="mr-1" /> Delete
                                         </AwesomeButton>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
+                                    </td>
+                                </tr>
+                            );
+                        })}
                     </tbody>
-
                 </table>
             </div>
 

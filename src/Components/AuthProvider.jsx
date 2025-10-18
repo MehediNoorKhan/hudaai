@@ -109,50 +109,52 @@ const AuthProvider = ({ children }) => {
         }
     };
 
+    // useEffect(() => {
+    //     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    //         console.log("Auth state changed:", currentUser?.email);
+
+    //         if (currentUser) {
+    //             const normalizedUser = {
+    //                 ...currentUser,
+    //                 email: currentUser.email?.toLowerCase()
+    //             };
+    //             setUser(normalizedUser);
+
+    //             // Fetch role after user is set
+    //             await fetchUserRole(normalizedUser.email);
+    //         } else {
+    //             setUser(null);
+    //             setRole(null);
+    //         }
+
+    //         setLoading(false);
+    //     });
+
+    //     return () => unsubscribe();
+    // }, [axiosSecure]);
+
+
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-            console.log("Auth state changed:", currentUser?.email);
-
-            if (currentUser) {
+            setLoading(true); // ✅ start loading when auth state changes
+            if (currentUser?.email) {
                 const normalizedUser = {
                     ...currentUser,
-                    email: currentUser.email?.toLowerCase()
+                    email: currentUser.email.toLowerCase(),
                 };
                 setUser(normalizedUser);
 
-                // Fetch role after user is set
+                // wait until role is fetched
                 await fetchUserRole(normalizedUser.email);
             } else {
                 setUser(null);
                 setRole(null);
             }
-
-            setLoading(false);
+            setLoading(false); // ✅ only stop loading after role is ready
         });
 
         return () => unsubscribe();
-    }, [axiosSecure]);
-
-    // useEffect(() => {
-    //     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-    //         if (currentUser) {
-    //             setUser({ ...currentUser, email: currentUser.email.toLowerCase() });
-    //             try {
-    //                 const res = await axiosSecure.get(`/users/role/${currentUser.email}`);
-    //                 setRole(res.data.role); // 'user' or 'admin'
-    //             } catch (err) {
-    //                 console.error("Error fetching user role:", err);
-    //                 setRole(null);
-    //             }
-    //         } else {
-    //             setUser(null);
-    //             setRole(null);
-    //         }
-    //         setLoading(false);
-    //     });
-
-    //     return () => unsubscribe();
-    // }, []);
+    }, [auth, axiosSecure]);
 
 
     const authInfo = {

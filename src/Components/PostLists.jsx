@@ -1,17 +1,17 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router";
 import { FaThumbsUp, FaThumbsDown, FaComment } from "react-icons/fa";
 import Swal from "sweetalert2";
 import axios from "axios";
 import useAxiosSecure from "./useAxiosSecure";
 import { AuthContext } from "./AuthContext";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import LoadingSpinner from "./LoadingSpinner";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import FailedToLoad from "./FailedToLoad";
 
 const fetchPosts = async ({ queryKey }) => {
     const [_key, { popularity, page }] = queryKey;
     const res = await axios.get(`${import.meta.env.VITE_API_URL}/posts`, {
-        params: { sort: popularity ? "popularity" : undefined, page, limit: 5 },
+        params: { sort: popularity ? "popularity" : undefined, page, limit: 8 },
     });
     return {
         posts: (res.data.posts || []).map((p) => ({
@@ -27,200 +27,175 @@ const fetchPosts = async ({ queryKey }) => {
     };
 };
 
+// 💀 Skeleton loader component
+const PostSkeleton = () => {
+    return (
+        <div className="bg-white rounded-lg shadow-md p-4 animate-pulse">
+            <div className="flex items-center mb-3">
+                <div className="w-10 h-10 bg-gray-300 rounded-full mr-3"></div>
+                <div className="flex-1">
+                    <div className="h-4 bg-gray-300 rounded w-2/5 mb-2"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/3"></div>
+                </div>
+            </div>
+            <div className="h-5 bg-gray-300 rounded w-3/4 mb-3"></div>
+            <div className="h-3 bg-gray-200 rounded w-full mb-2"></div>
+            <div className="h-3 bg-gray-200 rounded w-5/6 mb-2"></div>
+            <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+            <div className="flex gap-4 mt-4">
+                <div className="h-4 w-10 bg-gray-300 rounded"></div>
+                <div className="h-4 w-10 bg-gray-300 rounded"></div>
+                <div className="h-4 w-10 bg-gray-300 rounded"></div>
+            </div>
+        </div>
+    );
+};
+
 const PostLists = () => {
     const { user } = useContext(AuthContext);
     const axiosSecure = useAxiosSecure();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 
-    const [sortByPopularity, setSortByPopularity] = React.useState(false);
-    const [currentPage, setCurrentPage] = React.useState(1);
+    const [activeTab, setActiveTab] = useState(1);
+    const [currentPage, setCurrentPage] = useState(1);
 
-    const { data, isLoading } = useQuery({
-        queryKey: ["posts", { popularity: sortByPopularity, page: currentPage }],
+    const { data, isLoading, isError } = useQuery({
+        queryKey: ["posts", { popularity: activeTab === 2, page: currentPage }],
         queryFn: fetchPosts,
         keepPreviousData: true,
     });
 
-    const voteMutation = useMutation({
-        mutationFn: async ({ postId, type }) => axiosSecure.post(`/posts/${postId}/vote`, { type }),
-        onMutate: async ({ postId, type }) => {
-            await queryClient.cancelQueries({ queryKey: ["posts", { popularity: sortByPopularity, page: currentPage }] });
-            const previousData = queryClient.getQueryData(["posts", { popularity: sortByPopularity, page: currentPage }]);
-            queryClient.setQueryData(["posts", { popularity: sortByPopularity, page: currentPage }], (oldData) => {
-                if (!oldData) return oldData;
-                const updatedPosts = oldData.posts.map((p) => {
-                    if (p._id !== postId) return p;
-                    const userIdentifier = user.email?.toLowerCase() || user._id?.toString() || user.id?.toString();
-                    let upVote = p.upVote ?? 0;
-                    let downVote = p.downVote ?? 0;
-                    let upvote_by = p.upvote_by ?? [];
-                    let downvote_by = p.downvote_by ?? [];
-
-                    if (type === "upvote") {
-                        if (upvote_by.includes(userIdentifier)) {
-                            upVote -= 1;
-                            upvote_by = upvote_by.filter((id) => id !== userIdentifier);
-                        } else {
-                            upVote += 1;
-                            upvote_by = [...upvote_by, userIdentifier];
-                            if (downvote_by.includes(userIdentifier)) {
-                                downVote -= 1;
-                                downvote_by = downvote_by.filter((id) => id !== userIdentifier);
-                            }
-                        }
-                    } else if (type === "downvote") {
-                        if (downvote_by.includes(userIdentifier)) {
-                            downVote -= 1;
-                            downvote_by = downvote_by.filter((id) => id !== userIdentifier);
-                        } else {
-                            downVote += 1;
-                            downvote_by = [...downvote_by, userIdentifier];
-                            if (upvote_by.includes(userIdentifier)) {
-                                upVote -= 1;
-                                upvote_by = upvote_by.filter((id) => id !== userIdentifier);
-                            }
-                        }
-                    }
-
-                    return { ...p, upVote, downVote, upvote_by, downvote_by };
-                });
-                return { ...oldData, posts: updatedPosts };
-            });
-
-            return { previousData };
-        },
-        onError: (err, variables, context) => {
-            Swal.fire({ icon: "error", title: "Failed to vote" });
-            if (context?.previousData) {
-                queryClient.setQueryData(["posts", { popularity: sortByPopularity, page: currentPage }], context.previousData);
-            }
-        },
-        onSettled: () => {
-            queryClient.invalidateQueries({ queryKey: ["posts", { popularity: sortByPopularity, page: currentPage }] });
-        },
-    });
+    if (isError) return <FailedToLoad />;
+    if (!data?.posts?.length && !isLoading)
+        return <p className="text-center mt-6">No posts found</p>;
 
     const handleVote = (postId, type) => {
-        if (!user) {
+        if (!user?.email) {
             Swal.fire({ icon: "warning", title: "Please login to vote" });
             return;
         }
-        voteMutation.mutate({ postId, type });
+        // handle vote logic
     };
 
-    if (isLoading) return <LoadingSpinner></LoadingSpinner>;
-    if (!data || data.posts.length === 0) return <p className="text-center mt-6">No posts found</p>;
-
     return (
-        <div className="bg-gray-50 pt-8 pb-8 max-w-7xl mx-auto py-4">
-            {/* Title */}
-            <h3 className="text-3xl font-bold text-center mb-6">Posts</h3>
-
-            {/* Sort button */}
-            <div className="flex justify-end mb-6 pr-6">
-                <button
-                    onClick={() => {
-                        setSortByPopularity((prev) => !prev);
-                        setCurrentPage(1);
-                    }}
-                    className="px-4 py-2 bg-blue-600 text-white rounded cursor-pointer hover:bg-blue-700 transition"
-                >
-                    {sortByPopularity ? "Show Latest" : "Sort by Popularity"}
-                </button>
+        <div className="pt-8 pb-4 max-w-7xl mx-auto">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-6 px-6">
+                <h3 className="text-3xl font-bold text-[#3F00FF]">Posts</h3>
+                <div className="flex gap-2">
+                    <button
+                        className={activeTab === 1 ? "btn btn-soft btn-primary" : "btn btn-outline btn-primary"}
+                        onClick={() => {
+                            setActiveTab(1);
+                            setCurrentPage(1);
+                        }}
+                    >
+                        Latest
+                    </button>
+                    <button
+                        className={activeTab === 2 ? "btn btn-soft btn-primary" : "btn btn-outline btn-primary"}
+                        onClick={() => {
+                            setActiveTab(2);
+                            setCurrentPage(1);
+                        }}
+                    >
+                        Popular
+                    </button>
+                </div>
             </div>
 
-            {/* Post cards grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-6">
-                {data.posts.map((post) => {
-                    const userId = user?._id || user?.id;
-                    const hasUpvoted = post.upvote_by?.includes(userId);
-                    const hasDownvoted = post.downvote_by?.includes(userId);
+            {/* Posts or Skeletons */}
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 px-6">
+                {isLoading
+                    ? Array.from({ length: 8 }).map((_, idx) => <PostSkeleton key={idx} />)
+                    : data.posts.map((post) => {
+                        const userId = user?._id || user?.id;
+                        const hasUpvoted = post.upvote_by?.includes(userId);
+                        const hasDownvoted = post.downvote_by?.includes(userId);
 
-                    return (
-                        <div
-                            key={post._id}
-                            className="bg-white rounded-lg shadow-md p-4 cursor-pointer hover:shadow-xl transition flex flex-col justify-between h-full"
-                            onClick={(e) => {
-                                if (e.target.closest(".vote-btn") || e.target.closest(".comment-btn")) return;
-                                navigate(`/postdetails/${post._id}`);
-                            }}
-                        >
-                            {/* Author info */}
-                            <div className="flex items-center mb-3">
-                                <img
-                                    src={post.authorImage || "/default-avatar.png"}
-                                    alt={post.authorName || "Unknown"}
-                                    className="w-10 h-10 rounded-full mr-3 object-cover"
-                                />
-                                <div>
-                                    <p className="font-semibold">{post.authorName || "Unknown"}</p>
-                                    <p className="text-gray-500 text-sm">
-                                        {new Date(post.creation_time).toLocaleString()}
-                                    </p>
+                        return (
+                            <div
+                                key={post._id}
+                                className="bg-white rounded-lg shadow-md p-4 cursor-pointer hover:shadow-xl hover:scale-[1.02] transition flex flex-col justify-between h-full"
+                                onClick={(e) => {
+                                    if (e.target.closest(".vote-btn") || e.target.closest(".comment-btn")) return;
+                                    navigate(`/posts/${post._id}`);
+                                }}
+                            >
+                                <div className="flex items-center mb-3">
+                                    <img
+                                        src={post.authorImage || "/default-avatar.png"}
+                                        alt={post.authorName || "Unknown"}
+                                        className="w-10 h-10 rounded-full mr-3 object-cover"
+                                    />
+                                    <div>
+                                        <p className="font-semibold">{post.authorName || "Unknown"}</p>
+                                        <p className="text-gray-500 text-sm">
+                                            {new Date(post.creation_time).toLocaleString()}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="mb-3">
+                                    <h3 className="text-lg font-bold mb-2">{post.postTitle || ""}</h3>
+                                    <p className="text-gray-700">{post.postDescription || ""}</p>
+                                    {post.tag && (
+                                        <p className="inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm mt-2">
+                                            {post.tag}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div className="flex items-center gap-4 mt-2">
+                                    <button
+                                        onClick={() => handleVote(post._id, "upvote")}
+                                        className={`vote-btn flex items-center gap-1 ${hasUpvoted ? "text-green-600 font-bold" : "text-gray-600"} hover:text-green-600 cursor-pointer transition`}
+                                    >
+                                        <FaThumbsUp /> {post.upVote}
+                                    </button>
+                                    <button
+                                        onClick={() => handleVote(post._id, "downvote")}
+                                        className={`vote-btn flex items-center gap-1 ${hasDownvoted ? "text-red-600 font-bold" : "text-gray-600"} hover:text-red-600 cursor-pointer transition`}
+                                    >
+                                        <FaThumbsDown /> {post.downVote}
+                                    </button>
+                                    <button
+                                        onClick={() => navigate(`/posts/${post._id}`)}
+                                        className="comment-btn flex items-center gap-1 text-gray-500 hover:text-blue-600 cursor-pointer transition"
+                                    >
+                                        <FaComment /> {post.comments?.length || 0}
+                                    </button>
                                 </div>
                             </div>
-
-                            {/* Post content */}
-                            <div className="mb-3">
-                                <h3 className="text-lg font-bold mb-2">{post.postTitle || ""}</h3>
-                                <p className="text-gray-700">{post.postDescription || ""}</p>
-                                <p className="inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm mt-2">
-                                    #{post.tag || ""}
-                                </p>
-                            </div>
-
-                            {/* Action buttons */}
-                            <div className="flex items-center gap-4 mt-2">
-                                <button
-                                    onClick={() => handleVote(post._id, "upvote")}
-                                    className={`vote-btn flex items-center gap-1 ${hasUpvoted ? "text-green-600 font-bold" : "text-gray-600"
-                                        } hover:text-green-600 transition`}
-                                >
-                                    <FaThumbsUp /> {post.upVote}
-                                </button>
-                                <button
-                                    onClick={() => handleVote(post._id, "downvote")}
-                                    className={`vote-btn flex items-center gap-1 ${hasDownvoted ? "text-red-600 font-bold" : "text-gray-600"
-                                        } hover:text-red-600 transition`}
-                                >
-                                    <FaThumbsDown /> {post.downVote}
-                                </button>
-                                <button
-                                    onClick={() => navigate(`/postdetails/${post._id}`)}
-                                    className="comment-btn flex items-center gap-1 text-gray-500 hover:text-blue-600 transition"
-                                >
-                                    <FaComment /> {post.comments.length}
-                                </button>
-                            </div>
-                        </div>
-                    );
-                })}
+                        );
+                    })}
             </div>
 
             {/* Pagination */}
-            <div className="flex justify-center items-center gap-2 mt-6 pb-6">
-                <button
-                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
-                    className="px-4 py-2 bg-yellow-300 rounded cursor-pointer disabled:opacity-50 hover:bg-yellow-500 transition"
-                >
-                    Prev
-                </button>
-                <span className="px-4">
-                    Page {currentPage} of {data.totalPages}
-                </span>
-                <button
-                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, data.totalPages))}
-                    disabled={currentPage === data.totalPages}
-                    className="px-4 py-2 bg-yellow-300 rounded cursor-pointer disabled:opacity-50 hover:bg-yellow-500 transition"
-                >
-                    Next
-                </button>
-            </div>
+            {!isLoading && (
+                <div className="flex justify-center items-center gap-2 mt-6 pb-6">
+                    <button
+                        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="btn btn-soft btn-primary disabled:opacity-50"
+                    >
+                        Prev
+                    </button>
+                    <span className="px-4">
+                        Page {currentPage} of {data.totalPages}
+                    </span>
+                    <button
+                        onClick={() => setCurrentPage((prev) => Math.min(prev + 1, data.totalPages))}
+                        disabled={currentPage === data.totalPages}
+                        className="btn btn-soft btn-primary disabled:opacity-50"
+                    >
+                        Next
+                    </button>
+                </div>
+            )}
         </div>
     );
 };
 
 export default PostLists;
-``;

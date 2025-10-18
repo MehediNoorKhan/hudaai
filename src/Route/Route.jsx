@@ -36,7 +36,7 @@ export const router = createBrowserRouter([
             { index: true, Component: Home },
             { path: "register", Component: Register },
             { path: "login", Component: Login },
-            { path: "postdetails/:id", element: <PostDetails></PostDetails> },
+            { path: "posts/:id", element: <PostDetails></PostDetails> },
             { path: "membership", element: <UserRoute><Membership></Membership></UserRoute> },
             { path: "forbidden", Component: Forbidden }
 

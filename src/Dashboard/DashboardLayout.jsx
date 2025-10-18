@@ -1,14 +1,7 @@
 import React, { useState } from "react";
 import { Link, Outlet, useLocation } from "react-router";
 import {
-    FaBars,
-    FaTimes,
-    FaHome,
-    FaUser,
-    FaPlus,
-    FaUsers,
-    FaBullhorn,
-    FaFlag,
+    FaBars, FaTimes, FaHome, FaUser, FaPlus, FaUsers, FaBullhorn, FaFlag,
 } from "react-icons/fa";
 import { useAuth } from "../Components/AuthContext";
 import LoadingSpinner from "../Components/LoadingSpinner";
@@ -16,7 +9,7 @@ import LoadingSpinner from "../Components/LoadingSpinner";
 export default function DashboardLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const { user, role, loading } = useAuth();
-    const location = useLocation(); // 🔹 Get current path
+    const location = useLocation();
 
     const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
@@ -31,9 +24,11 @@ export default function DashboardLayout() {
         { name: "Reported Comments", path: "/dashboard/reportedcomments", icon: <FaFlag />, roles: ["admin"] },
     ];
 
-    const sidebarLinks = allSidebarLinks.filter(link => link.roles.includes(role));
+    // Only filter when role exists
+    const sidebarLinks = role ? allSidebarLinks.filter(link => link.roles.includes(role)) : [];
 
-    if (loading) return <LoadingSpinner />;
+    // ✅ Protect against null role
+    if (loading || role === null) return <LoadingSpinner />;
 
     if (!user) {
         return (
@@ -54,22 +49,22 @@ export default function DashboardLayout() {
     const Sidebar = () => (
         <aside className="hidden lg:flex lg:flex-col lg:w-64 bg-white shadow-lg">
             <div className="p-6 text-2xl font-bold text-blue-700">Dashboard</div>
-
             <div className="px-6 py-4 bg-gray-50 rounded-b">
                 <p className="text-sm text-gray-500">Welcome back,</p>
-                <p className="font-semibold text-gray-800 truncate">{user?.displayName || user?.email}</p>
-                <span className="inline-block mt-2 px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
-                    {role.toUpperCase()}
-                </span>
+                <p className="font-semibold text-gray-800 truncate">{user.displayName || user.email}</p>
+                {role && (
+                    <span className="inline-block mt-2 px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                        {role?.toUpperCase()}
+                    </span>
+                )}
             </div>
-
             <nav className="flex-1 p-4 space-y-1">
                 {sidebarLinks.map(link => (
                     <Link
                         key={link.name}
                         to={link.path}
                         className={`flex items-center gap-3 p-3 rounded cursor-pointer transition
-              ${location.pathname === link.path ? "bg-blue-500 text-white" : "text-gray-700 hover:bg-blue-50 hover:text-blue-700"}`}
+                        ${location.pathname === link.path ? "bg-blue-500 text-white" : "text-gray-700 hover:bg-blue-50 hover:text-blue-700"}`}
                     >
                         {link.icon}
                         <span className="font-medium">{link.name}</span>
@@ -89,15 +84,15 @@ export default function DashboardLayout() {
                         <FaTimes size={20} />
                     </button>
                 </div>
-
                 <div className="px-6 py-4 border-b bg-gray-50 rounded-b">
                     <p className="text-sm text-gray-500">Welcome back,</p>
-                    <p className="font-semibold text-gray-800 truncate">{user?.displayName || user?.email}</p>
-                    <span className="inline-block mt-2 px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
-                        {role.toUpperCase()}
-                    </span>
+                    <p className="font-semibold text-gray-800 truncate">{user.displayName || user.email}</p>
+                    {role && (
+                        <span className="inline-block mt-2 px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                            {role?.toUpperCase()}
+                        </span>
+                    )}
                 </div>
-
                 <nav className="p-4 space-y-1">
                     {sidebarLinks.map(link => (
                         <Link
@@ -105,7 +100,7 @@ export default function DashboardLayout() {
                             to={link.path}
                             onClick={toggleSidebar}
                             className={`flex items-center gap-3 p-3 rounded cursor-pointer transition
-                ${location.pathname === link.path ? "bg-blue-500 text-white" : "text-gray-700 hover:bg-blue-50 hover:text-blue-700"}`}
+                            ${location.pathname === link.path ? "bg-blue-500 text-white" : "text-gray-700 hover:bg-blue-50 hover:text-blue-700"}`}
                         >
                             {link.icon}
                             <span className="font-medium">{link.name}</span>
@@ -128,7 +123,11 @@ export default function DashboardLayout() {
                     </button>
                     <span className="text-xl font-bold text-blue-700">Dashboard</span>
                     <div>
-                        <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">{role.toUpperCase()}</span>
+                        {role && (
+                            <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
+                                {role?.toUpperCase()}
+                            </span>
+                        )}
                     </div>
                 </header>
 
