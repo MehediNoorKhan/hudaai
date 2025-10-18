@@ -37,7 +37,7 @@ export default function Announcements() {
 
     return (
         <div className="max-w-7xl mx-auto mb-6 pb-4">
-            <h2 className="text-3xl font-bold text-start text-[#3F00FF] mb-8 mt-4 pl-3">Announcements</h2>
+            <h2 className="text-3xl font-bold text-start text-primary mb-8 mt-4 pl-3">Announcements</h2>
 
             <div className="space-y-6">
                 {isLoading

@@ -106,11 +106,11 @@ export default function Banner({ selectedTag }) {
 
     return (
         <div
-            className={`w-full pt-16 bg-base-200 transition-all duration-500 ${results.length > 0
-                    ? "pb-16 min-h-[400px]"
-                    : noResult
-                        ? "pb-24 max-h-[220px]"
-                        : "min-h-[150px]"
+            className={`w-full pt-20 bg-base-200 transition-all duration-500 ${results.length > 0
+                ? "pb-16 min-h-[400px]"
+                : noResult
+                    ? "pb-24 max-h-[220px]"
+                    : "min-h-[150px]"
                 }`}
         >
             {/* Search Bar */}
@@ -217,8 +217,8 @@ export default function Banner({ selectedTag }) {
                                                 handleVote(post._id, "upvote")
                                             }
                                             className={`vote-btn flex items-center gap-1 ${hasUpvoted
-                                                    ? "text-green-600 font-bold"
-                                                    : "text-gray-600"
+                                                ? "text-green-600 font-bold"
+                                                : "text-gray-600"
                                                 } hover:text-green-600 cursor-pointer transition`}
                                         >
                                             <FaThumbsUp /> {post.upVote}
@@ -228,8 +228,8 @@ export default function Banner({ selectedTag }) {
                                                 handleVote(post._id, "downvote")
                                             }
                                             className={`vote-btn flex items-center gap-1 ${hasDownvoted
-                                                    ? "text-red-600 font-bold"
-                                                    : "text-gray-600"
+                                                ? "text-red-600 font-bold"
+                                                : "text-gray-600"
                                                 } hover:text-red-600 cursor-pointer transition`}
                                         >
                                             <FaThumbsDown /> {post.downVote}

@@ -42,7 +42,7 @@ const Header = () => {
     const isActive = (path) => location.pathname === path;
 
     return (
-        <div className={`fixed top-0 left-0 w-full z-50 px-6 transition-all duration-300 ${scrolled ? "bg-white shadow-md" : "bg-transparent"}`}>
+        <div className={`fixed top-0 left-0 w-full z-50 px-6 transition-all duration-300 ${scrolled ? "bg-white shadow-md" : "bg-gray-100"}`}>
             <div className="navbar max-w-7xl mx-auto">
 
                 {/* Left - Logo + Name */}
@@ -51,11 +51,15 @@ const Header = () => {
                         to="/"
                         className="flex items-center gap-2 normal-case text-2xl hover:bg-transparent"
                     >
-                        <span className="text-primary font-lightFont font-light">
+                        <span
+                            className="text-blue-500 pl-2"
+                            style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 500 }}
+                        >
                             Convonest
                         </span>
                     </Link>
                 </div>
+
 
 
 

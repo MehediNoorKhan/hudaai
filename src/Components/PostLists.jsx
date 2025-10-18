@@ -82,7 +82,7 @@ const PostLists = () => {
         <div className="pt-8 pb-4 max-w-7xl mx-auto">
             {/* Header */}
             <div className="flex justify-between items-center mb-6 px-6">
-                <h3 className="text-3xl font-bold text-[#3F00FF]">Posts</h3>
+                <h3 className="text-3xl font-bold text-primary">Posts</h3>
                 <div className="flex gap-2">
                     <button
                         className={activeTab === 1 ? "btn btn-soft btn-primary" : "btn btn-outline btn-primary"}
