@@ -16,8 +16,8 @@ export default function CheckoutForm() {
     const price = 1000; // $10 (Stripe uses cents)
 
     useEffect(() => {
-        // Create PaymentIntent when component mounts
-        axiosSecure.post("/create-payment-intent", { amount: price })
+        axiosSecure
+            .post("/create-payment-intent", { amount: price })
             .then(res => setClientSecret(res.data.clientSecret))
             .catch(err => console.error("PaymentIntent error:", err));
     }, [axiosSecure]);
@@ -32,7 +32,6 @@ export default function CheckoutForm() {
         if (!card) return;
 
         try {
-            // 1️⃣ Create PaymentMethod
             const { paymentMethod, error: pmError } = await stripe.createPaymentMethod({
                 type: "card",
                 card,
@@ -48,7 +47,6 @@ export default function CheckoutForm() {
                 return;
             }
 
-            // 2️⃣ Confirm Payment
             const { paymentIntent, error: confirmError } = await stripe.confirmCardPayment(clientSecret, {
                 payment_method: paymentMethod.id,
             });
@@ -60,17 +58,15 @@ export default function CheckoutForm() {
             }
 
             if (paymentIntent.status === "succeeded") {
-                // 3️⃣ Save transaction to backend
                 const transactionData = {
                     email: user?.email,
-                    amount: paymentIntent.amount / 100, // convert cents to dollars
+                    amount: paymentIntent.amount / 100,
                     transactionId: paymentIntent.id,
                     cardType: paymentMethod.card.brand,
                     cardOwner: paymentMethod.billing_details.name,
                 };
 
                 await axiosSecure.post("/save-payment", transactionData);
-
                 Swal.fire("Success", "You are now a Gold Member!", "success");
             }
         } catch (err) {
@@ -82,16 +78,41 @@ export default function CheckoutForm() {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <CardElement className="p-3 border rounded" />
+        <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-md mx-auto px-4 sm:px-6">
+            {/* Card Input */}
+            {loading ? (
+                <div className="animate-pulse space-y-4">
+                    <div className="h-14 bg-gray-200 rounded-md w-full"></div>
+                    <div className="h-12 bg-gray-200 rounded-md w-full"></div>
+                </div>
+            ) : (
+                <>
+                    <div className="p-3 border rounded-md bg-white w-full">
+                        <CardElement
+                            options={{
+                                style: {
+                                    base: {
+                                        fontSize: "16px",
+                                        color: "#000",
+                                        "::placeholder": { color: "#888" },
+                                    },
+                                    invalid: { color: "#e53e3e" },
+                                },
+                            }}
+                        />
+                    </div>
 
-            <button
-                type="submit"
-                disabled={!stripe || !clientSecret || loading}
-                className={`px-6 py-2 rounded bg-purple-600 text-white cursor-pointer font-semibold ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
-            >
-                {loading ? "Processing..." : "Pay $10"}
-            </button>
+                    {/* Submit Button */}
+                    <button
+                        type="submit"
+                        disabled={!stripe || !clientSecret || loading}
+                        className={`btn btn-primary w-full py-3 text-lg sm:text-base ${loading ? "opacity-50 cursor-not-allowed" : ""
+                            }`}
+                    >
+                        Pay $10
+                    </button>
+                </>
+            )}
         </form>
     );
 }
