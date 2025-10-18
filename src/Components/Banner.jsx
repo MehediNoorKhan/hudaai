@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
@@ -7,21 +7,24 @@ import Swal from "sweetalert2";
 import { AuthContext } from "./AuthContext";
 import useAxiosSecure from "./useAxiosSecure";
 
-export default function Banner() {
+export default function Banner({ selectedTag }) {
     const [searchTerm, setSearchTerm] = useState("");
     const [searchedTerm, setSearchedTerm] = useState("");
     const [results, setResults] = useState([]);
     const [noResult, setNoResult] = useState(false);
     const [loading, setLoading] = useState(false);
     const [expectedCount, setExpectedCount] = useState(3);
+
     const navigate = useNavigate();
     const { user } = useContext(AuthContext);
     const axiosSecure = useAxiosSecure();
 
-    // 🔍 Search posts by tag
     const searchMutation = useMutation({
         mutationFn: async (tag) => {
-            const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/posts/search`, { tag });
+            const { data } = await axios.post(
+                `${import.meta.env.VITE_API_URL}/posts/search`,
+                { tag }
+            );
             return data.posts || [];
         },
         onMutate: () => {
@@ -47,6 +50,15 @@ export default function Banner() {
         },
     });
 
+    // Run search whenever selectedTag changes
+    useEffect(() => {
+        if (selectedTag) {
+            setSearchTerm(selectedTag);
+            setSearchedTerm(selectedTag);
+            searchMutation.mutate(selectedTag);
+        }
+    }, [selectedTag]);
+
     const handleSearch = (e) => {
         e.preventDefault();
         const trimmed = searchTerm.trim();
@@ -62,7 +74,6 @@ export default function Banner() {
         setSearchedTerm("");
     };
 
-    // 👍 Voting
     const handleVote = async (postId, type) => {
         if (!user?.email) {
             Swal.fire({ icon: "warning", title: "Please login to vote" });
@@ -96,15 +107,18 @@ export default function Banner() {
     return (
         <div
             className={`w-full pt-16 bg-base-200 transition-all duration-500 ${results.length > 0
-                ? "pb-16 min-h-[400px]"
-                : noResult
-                    ? "pb-24 max-h-[220px]" // Slightly taller when no result (≈ one <p> more height)
-                    : "min-h-[150px]"
+                    ? "pb-16 min-h-[400px]"
+                    : noResult
+                        ? "pb-24 max-h-[220px]"
+                        : "min-h-[150px]"
                 }`}
         >
             {/* Search Bar */}
             <div className="max-w-4xl mx-auto text-center space-y-4">
-                <form onSubmit={handleSearch} className="flex justify-center mt-6 gap-2 flex-wrap">
+                <form
+                    onSubmit={handleSearch}
+                    className="flex justify-center mt-6 gap-2 flex-wrap"
+                >
                     <input
                         type="text"
                         placeholder="Search by Tag"
@@ -115,7 +129,7 @@ export default function Banner() {
                     <button type="submit" className="btn btn-soft btn-primary">
                         Search
                     </button>
-                    {results.length > 0 && (
+                    {(results.length > 0 || noResult) && (
                         <button
                             type="button"
                             onClick={handleClear}
@@ -129,16 +143,19 @@ export default function Banner() {
 
             {/* Search Results */}
             <div className="max-w-7xl mx-auto mt-10 px-6">
-                {/* Skeletons while loading */}
                 {loading && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                        {Array.from({ length: Math.min(expectedCount, 6) }).map((_, idx) => (
-                            <div key={idx} className="skeleton h-80 w-full rounded-lg" />
-                        ))}
+                        {Array.from({ length: Math.min(expectedCount, 6) }).map(
+                            (_, idx) => (
+                                <div
+                                    key={idx}
+                                    className="skeleton h-80 w-full rounded-lg"
+                                />
+                            )
+                        )}
                     </div>
                 )}
 
-                {/* Results */}
                 {!loading && results.length > 0 && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-4">
                         {results.map((post) => {
@@ -151,7 +168,11 @@ export default function Banner() {
                                     key={post._id}
                                     className="bg-white rounded-lg shadow-md p-4 cursor-pointer transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl flex flex-col justify-between h-full"
                                     onClick={(e) => {
-                                        if (e.target.closest(".vote-btn") || e.target.closest(".comment-btn")) return;
+                                        if (
+                                            e.target.closest(".vote-btn") ||
+                                            e.target.closest(".comment-btn")
+                                        )
+                                            return;
                                         navigate(`/posts/${post._id}`);
                                     }}
                                 >
@@ -167,15 +188,21 @@ export default function Banner() {
                                                 {post.authorName || "Unknown"}
                                             </p>
                                             <p className="text-gray-500 text-sm truncate">
-                                                {new Date(post.creation_time).toLocaleString()}
+                                                {new Date(
+                                                    post.creation_time
+                                                ).toLocaleString()}
                                             </p>
                                         </div>
                                     </div>
 
                                     {/* Post Content */}
                                     <div className="mb-3 flex-grow">
-                                        <h3 className="text-lg font-bold mb-2 truncate">{post.postTitle}</h3>
-                                        <p className="text-gray-700 line-clamp-3">{post.postDescription}</p>
+                                        <h3 className="text-lg font-bold mb-2 truncate">
+                                            {post.postTitle}
+                                        </h3>
+                                        <p className="text-gray-700 line-clamp-3">
+                                            {post.postDescription}
+                                        </p>
                                         {post.tag && (
                                             <p className="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm mt-2">
                                                 {post.tag}
@@ -186,25 +213,31 @@ export default function Banner() {
                                     {/* Action Buttons */}
                                     <div className="flex items-center gap-4 mt-2">
                                         <button
-                                            onClick={() => handleVote(post._id, "upvote")}
+                                            onClick={() =>
+                                                handleVote(post._id, "upvote")
+                                            }
                                             className={`vote-btn flex items-center gap-1 ${hasUpvoted
-                                                ? "text-green-600 font-bold"
-                                                : "text-gray-600"
+                                                    ? "text-green-600 font-bold"
+                                                    : "text-gray-600"
                                                 } hover:text-green-600 cursor-pointer transition`}
                                         >
                                             <FaThumbsUp /> {post.upVote}
                                         </button>
                                         <button
-                                            onClick={() => handleVote(post._id, "downvote")}
+                                            onClick={() =>
+                                                handleVote(post._id, "downvote")
+                                            }
                                             className={`vote-btn flex items-center gap-1 ${hasDownvoted
-                                                ? "text-red-600 font-bold"
-                                                : "text-gray-600"
+                                                    ? "text-red-600 font-bold"
+                                                    : "text-gray-600"
                                                 } hover:text-red-600 cursor-pointer transition`}
                                         >
                                             <FaThumbsDown /> {post.downVote}
                                         </button>
                                         <button
-                                            onClick={() => navigate(`/posts/${post._id}`)}
+                                            onClick={() =>
+                                                navigate(`/posts/${post._id}`)
+                                            }
                                             className="comment-btn flex items-center cursor-pointer gap-1 text-gray-500 hover:text-blue-600 transition"
                                         >
                                             <FaComment /> {post.comments?.length || 0}
@@ -216,7 +249,6 @@ export default function Banner() {
                     </div>
                 )}
 
-                {/* No Result Found */}
                 {!loading && noResult && (
                     <p className="text-error text-xl text-center w-full mt-6">
                         No post found for “{searchedTerm}”

@@ -51,9 +51,13 @@ const Header = () => {
                         to="/"
                         className="flex items-center gap-2 normal-case text-2xl hover:bg-transparent"
                     >
-                        <span className="font-bold text-primary">Convonest</span>
+                        <span className="text-primary font-lightFont font-light">
+                            Convonest
+                        </span>
                     </Link>
                 </div>
+
+
 
                 {/* Center - Navigation (md and above) */}
                 <div className="navbar-center hidden md:flex gap-6 items-center">

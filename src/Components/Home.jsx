@@ -1,20 +1,20 @@
-import React, { useContext } from 'react';
-import TagBadges from './TagBadges';
-import PostLists from './PostLists';
-import { AuthContext } from './AuthContext';
-import Announcements from './Announcements';
-import Banner from './Banner';
-import LoadingSpinner from './LoadingSpinner';
+import React, { useContext, useState } from "react";
+import Banner from "./Banner";
+import TagBadges from "./TagBadges";
+import { AuthContext } from "./AuthContext";
+import PostLists from "./PostLists";
+import Announcements from "./Announcements";
+import LoadingSpinner from "./LoadingSpinner";
 
 const Home = () => {
-    const { user, loading } = useContext(AuthContext);
+    const { user } = useContext(AuthContext);
+    const [selectedTag, setSelectedTag] = useState(""); // state lifted here
 
-    if (loading) return <LoadingSpinner />;
 
     return (
         <div className="space-y-2">
-            <Banner />
-            <TagBadges />
+            <Banner selectedTag={selectedTag} />
+            <TagBadges onTagClick={(tag) => setSelectedTag(tag)} />
             <PostLists user={user} />
             <Announcements />
         </div>
