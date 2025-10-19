@@ -39,7 +39,6 @@ export default function DashboardNavbar({ onMenuClick, showMenuButton }) {
                 Convonest
             </a>
 
-
             <div className="flex-1"></div> {/* push profile to right */}
 
             {/* Profile + Logout */}
@@ -47,7 +46,10 @@ export default function DashboardNavbar({ onMenuClick, showMenuButton }) {
                 {user && (
                     <>
                         {/* Profile Picture */}
-                        <div className="relative cursor-pointer" onClick={() => setDropdownOpen(!dropdownOpen)}>
+                        <div
+                            className="relative cursor-pointer"
+                            onClick={() => window.innerWidth < 768 && setDropdownOpen(!dropdownOpen)} // toggle only on small screens
+                        >
                             <img
                                 src={user.photoURL || "https://via.placeholder.com/40"}
                                 alt={user.displayName || "User"}
@@ -55,7 +57,7 @@ export default function DashboardNavbar({ onMenuClick, showMenuButton }) {
                             />
                         </div>
 
-                        {/* Logout Button */}
+                        {/* Logout Button (always visible) */}
                         <button
                             className="btn btn-outline btn-primary"
                             onClick={handleLogout}
@@ -63,9 +65,9 @@ export default function DashboardNavbar({ onMenuClick, showMenuButton }) {
                             Logout
                         </button>
 
-                        {/* Optional dropdown for extra user info */}
+                        {/* Dropdown for small screens only */}
                         {dropdownOpen && (
-                            <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-lg rounded-md py-2 z-50 flex flex-col">
+                            <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-lg rounded-md py-2 z-50 flex flex-col md:hidden">
                                 <div className="px-4 py-2 text-gray-800 font-semibold text-center truncate">
                                     {user.displayName || "User"}
                                 </div>

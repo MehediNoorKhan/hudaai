@@ -58,10 +58,26 @@ export default function MyPosts() {
             try {
                 await axiosSecure.delete(`/posts/${postId}`);
                 setPosts(posts.filter((post) => post._id !== postId));
-                MySwal.fire("Deleted!", "Your post has been deleted.", "success");
+
+                // 🔹 Toast after successful delete
+                MySwal.fire({
+                    icon: "success",
+                    title: "Post deleted successfully!",
+                    toast: true,
+                    position: "top-right",
+                    showConfirmButton: false,
+                    timer: 1500,
+                });
             } catch (err) {
                 console.error(err);
-                MySwal.fire("Error!", "Failed to delete post.", "error");
+                MySwal.fire({
+                    icon: "error",
+                    title: "Failed to delete post.",
+                    toast: true,
+                    position: "top-right",
+                    showConfirmButton: false,
+                    timer: 1500,
+                });
             }
         }
     };
@@ -72,8 +88,7 @@ export default function MyPosts() {
     if (!posts.length)
         return (
             <div className="max-w-7xl mx-auto">
-
-                <div className=" h-[70vh] flex flex-col justify-center items-center py-8 dark:bg-gray-800 rounded text-center">
+                <div className="h-[70vh] flex flex-col justify-center items-center py-8 dark:bg-gray-800 rounded text-center">
                     <p className="text-red-500 text-4xl dark:text-gray-300 mb-4">You haven't posted anything yet</p>
                     <button
                         className="btn btn-outline btn-primary mt-2"
@@ -126,9 +141,8 @@ export default function MyPosts() {
                                                 (window.location.href = `/dashboard/posts/${post._id}`)
                                             }
                                         >
-                                            <FaCommentDots />  Comments
+                                            <FaCommentDots /> Comments
                                         </button>
-
                                     </td>
                                     <td className="px-6 py-4 text-center">
                                         <button
@@ -137,7 +151,6 @@ export default function MyPosts() {
                                         >
                                             <FaTrash /> Delete
                                         </button>
-
                                     </td>
                                 </tr>
                             );
@@ -196,4 +209,3 @@ export default function MyPosts() {
         </div>
     );
 }
-

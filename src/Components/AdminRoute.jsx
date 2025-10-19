@@ -18,7 +18,6 @@ const AdminRoute = ({ children }) => {
         if (location.pathname.includes("/admin/users")) return <ManageUsersSkeleton />;
         if (location.pathname.includes("/admin/posts")) return <ManagePostsSkeleton />;
         if (location.pathname.includes("/admin/profile")) return <AdminProfileSkeleton />;
-        return <LoadingSpinner />;
     };
 
     // ✅ Show skeleton while loading role

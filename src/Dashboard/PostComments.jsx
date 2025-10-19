@@ -2,9 +2,8 @@ import { useEffect, useState, useContext } from "react";
 import { useParams } from "react-router";
 import { AuthContext } from "../Components/AuthContext";
 import useAxiosSecure from "../Components/useAxiosSecure";
-import Swal from "sweetalert2";
-import { AwesomeButton } from "react-awesome-button";
-import "react-awesome-button/dist/styles.css";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import FailedToLoad from "../Components/FailedToLoad";
 import PostCommentsSkeleton from "../skeletons/PostCommentsSkeleton";
 
@@ -21,8 +20,8 @@ export default function PostComments() {
     const [selectedFeedback, setSelectedFeedback] = useState({});
     const [currentPage, setCurrentPage] = useState(1);
     const limit = 5;
-    const [totalComments, setTotalComments] = useState(0);
 
+    const [totalComments, setTotalComments] = useState(0);
     const totalPages = Math.ceil(totalComments / limit);
 
     const feedbackOptions = [
@@ -82,7 +81,6 @@ export default function PostComments() {
         }
     };
 
-
     useEffect(() => {
         fetchComments(currentPage);
     }, [currentPage]);
@@ -94,11 +92,7 @@ export default function PostComments() {
     const handleReport = async (commentId) => {
         const feedback = selectedFeedback[commentId];
         if (!feedback) {
-            Swal.fire({
-                icon: "warning",
-                title: "Select feedback",
-                text: "Please select a feedback option before reporting.",
-            });
+            toast.warn("Please select a feedback option before reporting.");
             return;
         }
 
@@ -116,23 +110,15 @@ export default function PostComments() {
                     return updated;
                 });
 
-                Swal.fire({
-                    icon: "success",
-                    title: "Reported!",
-                    text: "Comment reported successfully.",
-                });
+                toast.success("Comment reported successfully!");
             }
         } catch (err) {
             console.error(err);
-            Swal.fire({
-                icon: "error",
-                title: "Error",
-                text: "Failed to report comment. Please try again.",
-            });
+            toast.error("Failed to report comment. Please try again.");
         }
     };
 
-    if (loading) return <PostCommentsSkeleton></PostCommentsSkeleton>;
+    if (loading) return <PostCommentsSkeleton />;
     if (error) return <FailedToLoad />;
 
     if (!comments.length)
@@ -182,14 +168,13 @@ export default function PostComments() {
                                                 Select feedback
                                             </option>
                                             {feedbackOptions
-                                                .filter((opt) => opt.value) // exclude the empty placeholder for options
+                                                .filter((opt) => opt.value)
                                                 .map((opt) => (
                                                     <option key={opt.value} value={opt.value}>
                                                         {opt.label}
                                                     </option>
                                                 ))}
                                         </select>
-
                                     </td>
                                     <td className="px-6 py-4 text-center">
                                         <button
@@ -200,7 +185,6 @@ export default function PostComments() {
                                             {isReported ? "Reported" : "Report"}
                                         </button>
                                     </td>
-
                                 </tr>
                             );
                         })}
@@ -255,6 +239,9 @@ export default function PostComments() {
                     </li>
                 </ul>
             </nav>
+
+            {/* Toast container */}
+            <ToastContainer position="top-right" autoClose={2000} />
         </div>
     );
 }

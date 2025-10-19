@@ -13,6 +13,10 @@ import {
 import useAxiosSecure from "../Components/useAxiosSecure";
 import { AuthContext } from "../Components/AuthContext";
 import UserHomeSkeleton from "../skeletons/UserHomeSkeleton";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
+
+const MySwal = withReactContent(Swal);
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
@@ -29,15 +33,29 @@ export default function UserHome() {
             try {
                 setLoading(true);
                 const res = await axiosSecure.get(`/users/home-stats?email=${user.email}`);
-                // Ensure response has posts, comments, votes
                 setStats({
                     posts: res.data.posts || 0,
                     comments: res.data.comments || 0,
                     votes: res.data.votes || 0,
                 });
+
+                // 🔹 Toast for successful fetch
+
             } catch (err) {
                 console.error("Failed to fetch user stats:", err);
                 setStats({ posts: 0, comments: 0, votes: 0 });
+
+                // 🔹 Toast for error
+                MySwal.fire({
+                    icon: "error",
+                    title: "Failed to load stats",
+                    text: err.message || "Something went wrong!",
+                    toast: true,
+                    position: "top-right",
+                    timer: 2000,
+                    showConfirmButton: false,
+                    timerProgressBar: true,
+                });
             } finally {
                 setLoading(false);
             }
@@ -69,7 +87,6 @@ export default function UserHome() {
         },
     ];
 
-    // Bar chart data
     const barData = {
         labels: ["Posts", "Comments", "Total Votes"],
         datasets: [

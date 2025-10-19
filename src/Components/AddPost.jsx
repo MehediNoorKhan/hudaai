@@ -121,7 +121,7 @@ const AddPost = () => {
         }
     };
 
-    if (!user || loadingTags || loadingUserData) return <AddPostSkeleton></AddPostSkeleton>;
+    if (!user || loadingTags || loadingUserData) return <AddPostSkeleton />;
 
     // Check post limit for non-members
     const hitLimit = actualUserData?.membership === "no" && actualUserData?.posts >= 5;
@@ -136,7 +136,10 @@ const AddPost = () => {
                         <p className="text-gray-700 text-xl">To add more post</p>
                         <button
                             className="btn btn-outline btn-primary"
-                            onClick={() => navigate("/membership")}
+                            onClick={() => {
+                                toast.info("Redirecting to membership page...");
+                                navigate("/membership");
+                            }}
                         >
                             Be a Member
                         </button>

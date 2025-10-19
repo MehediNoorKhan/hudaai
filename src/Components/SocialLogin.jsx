@@ -24,6 +24,7 @@ const SocialLogin = () => {
             return res.data.data.display_url;
         } catch (err) {
             console.error("Image upload error:", err);
+            toast.error("Image upload failed, using original photo!");
             return imageUrl; // fallback to original
         }
     };

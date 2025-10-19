@@ -32,6 +32,7 @@ import AdminDashboardSkeleton from "../Skeletons/AdminDashboardSkeleton";
 import ManageUsersSkeleton from "../Skeletons/ManageUsersSkeleton";
 import AdminProfileSkeleton from "../Skeletons/AdminProfileSkeleton";
 import AddPostSkeleton from "../skeletons/AddPostSkeleton";
+import ReportedCommentsSkeleton from "../skeletons/ReportedCommentsSkeleton";
 
 export const router = createBrowserRouter([
     {
@@ -139,7 +140,7 @@ export const router = createBrowserRouter([
                 path: "reportedcomments",
                 element: (
                     <AdminRoute>
-                        <ReportedComments />
+                        <ReportedComments skeleton={<ReportedCommentsSkeleton></ReportedCommentsSkeleton>} />
                     </AdminRoute>
                 ),
             },

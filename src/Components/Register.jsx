@@ -2,8 +2,9 @@ import React, { useState, useContext } from "react";
 import axios from "axios";
 import SocialLogin from "./SocialLogin";
 import { AuthContext } from "./AuthContext"; // AuthProvider
-import Swal from "sweetalert2"; // ✅ Import SweetAlert2
 import { auth } from "../Firebase.config.init";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Register = () => {
     const { createUser, updateUserProfile } = useContext(AuthContext);
@@ -20,10 +21,7 @@ const Register = () => {
         e.preventDefault();
 
         if (!image) {
-            Swal.fire({
-                icon: "warning",
-                title: "Please select an image!",
-            });
+            toast.warning("Please select an image!", { autoClose: 2000 });
             return;
         }
 
@@ -61,39 +59,50 @@ const Register = () => {
                                     posts: 0,
                                 };
 
-                                // Save user in your DB
+                                // Save user in DB
                                 axios
                                     .post(`${import.meta.env.VITE_API_URL}/users`, userData)
                                     .then(() => {
-                                        Swal.fire({
-                                            icon: "success",
-                                            title: "Registered Successfully!",
-                                            showConfirmButton: false,
-                                            timer: 2000,
+                                        toast.success("Registered successfully!", {
+                                            position: "top-right",
+                                            autoClose: 2000,
                                         });
 
+                                        // Reset form
                                         setFullName("");
                                         setEmail("");
                                         setPassword("");
                                         setImage(null);
+                                    })
+                                    .catch((err) => {
+                                        console.error("DB Error:", err);
+                                        toast.error("Failed to save user info!", {
+                                            position: "top-right",
+                                            autoClose: 3000,
+                                        });
                                     });
+                            })
+                            .catch((err) => {
+                                console.error("Profile update error:", err);
+                                toast.error(`Failed to update profile: ${err.message}`, {
+                                    position: "top-right",
+                                    autoClose: 3000,
+                                });
                             });
                     })
                     .catch((error) => {
                         console.error("Firebase error:", error);
-                        Swal.fire({
-                            icon: "error",
-                            title: "Firebase Error",
-                            text: error.message,
+                        toast.error(`Firebase Error: ${error.message}`, {
+                            position: "top-right",
+                            autoClose: 3000,
                         });
                     });
             })
             .catch((error) => {
                 console.error("ImgBB error:", error);
-                Swal.fire({
-                    icon: "error",
-                    title: "Image Upload Failed",
-                    text: error.message,
+                toast.error(`Image Upload Failed: ${error.message}`, {
+                    position: "top-right",
+                    autoClose: 3000,
                 });
             })
             .finally(() => setLoading(false));
@@ -101,6 +110,7 @@ const Register = () => {
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-base-200 px-4 sm:px-6">
+            <ToastContainer position="top-right" autoClose={2000} />
             <div className="w-full max-w-sm sm:max-w-md p-6 bg-base-100 rounded-lg shadow-lg">
                 <h2 className="text-2xl font-bold mb-4 text-center">Register</h2>
 
@@ -111,6 +121,7 @@ const Register = () => {
                         className="input input-primary w-full"
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
+                        required
                     />
                     <input
                         type="email"
@@ -118,6 +129,7 @@ const Register = () => {
                         className="input input-primary w-full"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
+                        required
                     />
                     <input
                         type="password"
@@ -125,12 +137,14 @@ const Register = () => {
                         className="input input-primary w-full"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
+                        required
                     />
                     <input
                         type="file"
                         accept="image/*"
                         className="file-input file-input-bordered w-full"
                         onChange={handleImageChange}
+                        required
                     />
 
                     <button

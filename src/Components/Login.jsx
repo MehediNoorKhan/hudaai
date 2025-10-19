@@ -3,8 +3,8 @@ import { Link, useNavigate } from "react-router";
 import { AuthContext } from "./AuthContext";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import axiosSecure from "./axiosSecure"; // using the secure axios instance
-import SocialLogin from "./SocialLogin"; // ✅ import your SocialLogin component
+import axiosSecure from "./axiosSecure"; // secure axios instance
+import SocialLogin from "./SocialLogin"; // ✅ your SocialLogin component
 
 const Login = () => {
     const { login } = useContext(AuthContext);
@@ -50,7 +50,7 @@ const Login = () => {
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-base-200">
-            <ToastContainer />
+            <ToastContainer position="top-right" autoClose={2000} />
             <div className="w-full max-w-md p-8 space-y-6 bg-base-100 rounded-lg shadow-md">
                 <h2 className="text-2xl font-bold text-center text-gray-800">Login</h2>
 
@@ -91,7 +91,7 @@ const Login = () => {
                     </button>
                 </form>
 
-                {/* ✅ Replaced GoogleLogin with SocialLogin */}
+                {/* ✅ Social login with Google */}
                 <SocialLogin />
 
                 <p className="text-sm text-center text-gray-500 mt-4">
