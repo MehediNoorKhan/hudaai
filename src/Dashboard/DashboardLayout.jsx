@@ -9,6 +9,7 @@ import {
     FaUsers,
     FaBullhorn,
     FaFlag,
+    FaCommentDots,
 } from "react-icons/fa";
 import { useAuth } from "../Components/AuthContext";
 import DashboardNavbar from "./DashboardNavbar";
@@ -56,6 +57,8 @@ export default function DashboardLayout() {
         );
     }
 
+    const isPostCommentsPage = location.pathname.includes("/dashboard/posts/"); // or "/dashboard/myposts/comments" if you use that route
+
     const sidebarLinks = [
         { name: "Home", path: "/dashboard", icon: <FaHome />, roles: ["user", "admin"] },
         { name: "Profile", path: "/dashboard/profile", icon: <FaUser />, roles: ["user"] },
@@ -67,6 +70,16 @@ export default function DashboardLayout() {
         { name: "Reported Comments", path: "/dashboard/reportedcomments", icon: <FaFlag />, roles: ["admin"] },
     ].filter(link => role && link.roles.includes(role));
 
+    // Sub-link for Post Comments (visible only when viewing a post's comments)
+    const subLinks = isPostCommentsPage
+        ? [
+            {
+                name: "Post Comments",
+                path: location.pathname, // current post comments URL
+                icon: <FaCommentDots />,
+            },
+        ]
+        : [];
     const getActive = (path) => {
         // If current location matches path → active
         if (location.pathname === path) return true;
@@ -84,15 +97,32 @@ export default function DashboardLayout() {
                 {sidebarLinks.map(link => {
                     const active = getActive(link.path);
                     return (
-                        <Link
-                            key={link.name}
-                            to={link.path}
-                            className={`flex items-center gap-3 px-4 py-2 rounded cursor-pointer transition
-            ${active ? "bg-blue-100 text-blue-800 font-semibold" : "hover:bg-blue-50 hover:text-blue-700"}`}
-                        >
-                            {link.icon}
-                            <span>{link.name}</span>
-                        </Link>
+                        <div key={link.name}>
+                            <Link
+                                to={link.path}
+                                className={`flex items-center gap-3 px-4 py-2 rounded cursor-pointer transition
+                    ${active ? "bg-blue-100 text-blue-800 font-semibold" : "hover:bg-blue-50 hover:text-blue-700"}`}
+                            >
+                                {link.icon}
+                                <span>{link.name}</span>
+                            </Link>
+                            {/* Render sub-links if any */}
+                            {link.name === "My Posts" && subLinks.length > 0 && (
+                                <div className="ml-8 mt-1 space-y-1">
+                                    {subLinks.map(sublink => (
+                                        <Link
+                                            key={sublink.name}
+                                            to={sublink.path}
+                                            className={`flex items-center gap-2 px-4 py-1 rounded text-sm transition
+                                ${location.pathname === sublink.path ? "bg-blue-200 text-blue-900 font-semibold" : "hover:bg-blue-100 hover:text-blue-800"}`}
+                                        >
+                                            {sublink.icon}
+                                            <span>{sublink.name}</span>
+                                        </Link>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     );
                 })}
             </nav>
@@ -121,18 +151,38 @@ export default function DashboardLayout() {
                 </div>
                 <nav className="p-4 space-y-1">
                     {sidebarLinks.map(link => (
-                        <Link
-                            key={link.name}
-                            to={link.path}
-                            onClick={toggleSidebar}
-                            className={`flex items-center gap-3 p-3 rounded cursor-pointer transition
-                        ${location.pathname === link.path ? "bg-blue-100 text-blue-800 font-semibold" : "hover:bg-blue-50 hover:text-blue-700"}`}
-                        >
-                            {link.icon}
-                            <span>{link.name}</span>
-                        </Link>
+                        <div key={link.name}>
+                            <Link
+                                to={link.path}
+                                onClick={toggleSidebar}
+                                className={`flex items-center gap-3 p-3 rounded cursor-pointer transition
+                ${location.pathname === link.path ? "bg-blue-100 text-blue-800 font-semibold" : "hover:bg-blue-50 hover:text-blue-700"}`}
+                            >
+                                {link.icon}
+                                <span>{link.name}</span>
+                            </Link>
+
+                            {/* Sub-links for My Posts */}
+                            {link.name === "My Posts" && subLinks.length > 0 && (
+                                <div className="ml-4 mt-1 space-y-1">
+                                    {subLinks.map(sublink => (
+                                        <Link
+                                            key={sublink.name}
+                                            to={sublink.path}
+                                            onClick={toggleSidebar}
+                                            className={`flex items-center gap-2 px-3 py-1 rounded text-sm transition
+                            ${location.pathname === sublink.path ? "bg-blue-200 text-blue-900 font-semibold" : "hover:bg-blue-100 hover:text-blue-800"}`}
+                                        >
+                                            {sublink.icon}
+                                            <span>{sublink.name}</span>
+                                        </Link>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     ))}
                 </nav>
+
             </aside>
         </div>
     );

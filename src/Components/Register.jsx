@@ -47,7 +47,7 @@ const Register = () => {
                         // Immediately sign out so the user is not logged in automatically
                         auth.signOut();
 
-                        // Update Firebase profile (optional, you can still update)
+                        // Update Firebase profile
                         updateUserProfile(fullName, imageUrl)
                             .then(() => {
                                 const userData = {
@@ -100,29 +100,29 @@ const Register = () => {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-base-200">
-            <div className="w-full max-w-md p-6 bg-base-100 rounded-lg shadow-lg">
+        <div className="flex items-center justify-center min-h-screen bg-base-200 px-4 sm:px-6">
+            <div className="w-full max-w-sm sm:max-w-md p-6 bg-base-100 rounded-lg shadow-lg">
                 <h2 className="text-2xl font-bold mb-4 text-center">Register</h2>
 
                 <form className="space-y-3" onSubmit={handleSubmit}>
                     <input
                         type="text"
                         placeholder="Full Name"
-                        className="input input-bordered w-full"
+                        className="input input-primary w-full"
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
                     />
                     <input
                         type="email"
                         placeholder="Email"
-                        className="input input-bordered w-full"
+                        className="input input-primary w-full"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                     />
                     <input
                         type="password"
                         placeholder="Password"
-                        className="input input-bordered w-full"
+                        className="input input-primary w-full"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                     />
@@ -142,7 +142,9 @@ const Register = () => {
                     </button>
                 </form>
 
-                <SocialLogin />
+                <div className="mt-4">
+                    <SocialLogin />
+                </div>
             </div>
         </div>
     );

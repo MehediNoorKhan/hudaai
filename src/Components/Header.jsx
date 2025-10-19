@@ -1,11 +1,12 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router";
 import { AuthContext } from "./AuthContext";
-import { Bell } from "lucide-react";
+import { Bell, Menu, X } from "lucide-react";
 
 const Header = () => {
   const { user, logOut } = useContext(AuthContext);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [announcementCount, setAnnouncementCount] = useState(0);
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
@@ -55,13 +56,16 @@ const Header = () => {
         {/* Left - Logo */}
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center gap-2">
-            <span className="text-blue-500 text-2xl font-medium" style={{ fontFamily: "'Poppins', sans-serif" }}>
+            <span
+              className="text-blue-500 text-2xl font-medium"
+              style={{ fontFamily: "'Poppins', sans-serif" }}
+            >
               Convonest
             </span>
           </Link>
         </div>
 
-        {/* Center - Nav links */}
+        {/* Center - Nav links (hidden on small) */}
         <nav className="hidden md:flex gap-6 items-center">
           {navLinks.map((link) => (
             <Link
@@ -75,7 +79,7 @@ const Header = () => {
           ))}
         </nav>
 
-        {/* Right - Profile / Bell */}
+        {/* Right - Profile / Bell / Buttons */}
         <div className="flex items-center gap-3">
           {user && (
             <div className="relative cursor-pointer text-gray-500">
@@ -102,6 +106,16 @@ const Header = () => {
                     {user.displayName || "Admin"}
                   </div>
                   <hr className="border-t border-gray-200 my-1" />
+
+                  {/* ✅ Membership link for small devices */}
+                  <Link
+                    to="/membership"
+                    className="block px-4 py-2 text-gray-800 hover:bg-blue-100 transition-all duration-200 rounded md:hidden"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    Membership
+                  </Link>
+
                   <Link
                     to="/dashboard"
                     className="block px-4 py-2 text-gray-800 hover:bg-blue-100 transition-all duration-200 rounded"
@@ -109,6 +123,7 @@ const Header = () => {
                   >
                     Dashboard
                   </Link>
+
                   <button
                     className="w-full text-left px-4 py-2 text-gray-800 hover:bg-blue-100 transition-all duration-200 rounded"
                     onClick={handleLogout}
@@ -117,16 +132,43 @@ const Header = () => {
                   </button>
                 </div>
               )}
+
             </div>
           ) : (
-            <div className="hidden md:flex gap-2">
-              <Link to="/login">
-                <button className="btn btn-primary">Join Us</button>
-              </Link>
-              <Link to="/register">
-                <button className="btn btn-outline btn-primary">Register</button>
-              </Link>
-            </div>
+            <>
+              {/* Hidden on medium and up */}
+              <div className="hidden md:flex gap-2">
+                <Link to="/login">
+                  <button className="btn btn-primary">Join Us</button>
+                </Link>
+                <Link to="/register">
+                  <button className="btn btn-outline btn-primary">Register</button>
+                </Link>
+              </div>
+
+              {/* ✅ Small device hamburger (only when not logged in) */}
+              <div className="md:hidden">
+                <button
+                  onClick={() => setMenuOpen(!menuOpen)}
+                  className="text-gray-600 focus:outline-none"
+                >
+                  {menuOpen ? <X size={26} /> : <Menu size={26} />}
+                </button>
+
+                {menuOpen && (
+                  <div className="absolute top-16 right-4 bg-white shadow-lg border border-gray-200 rounded-lg p-4 flex flex-col gap-3 z-50">
+                    <Link to="/login" onClick={() => setMenuOpen(false)}>
+                      <button className="btn btn-primary w-full">Join Us</button>
+                    </Link>
+                    <Link to="/register" onClick={() => setMenuOpen(false)}>
+                      <button className="btn btn-outline btn-primary w-full">
+                        Register
+                      </button>
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </>
           )}
         </div>
       </div>
