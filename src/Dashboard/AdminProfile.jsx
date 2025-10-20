@@ -65,10 +65,14 @@ export default function AdminProfile() {
 
     if (!adminData)
         return (
-            <div className="text-center mt-10 text-gray-600">
-                Admin data not found.
+            <div className="max-w-7xl mx-auto mt-10 p-6 flex flex-col justify-center items-center bg-gray-100 rounded-xl">
+                <h3 className="text-3xl font-semibold mb-3 text-red-500">No Admin Data Found</h3>
+                <p className="text-xl text-error">
+                    It seems there is currently no admin data available. Please check back later!
+                </p>
             </div>
         );
+
 
     return (
         <div className="space-y-6 p-6 max-w-3xl mx-auto">

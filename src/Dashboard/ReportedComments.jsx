@@ -50,16 +50,6 @@ export default function ReportedComments() {
             }
         } catch (err) {
             setError("Failed to fetch reports");
-            MySwal.fire({
-                icon: "error",
-                title: "Failed to fetch reports",
-                text: err.message || "Something went wrong!",
-                toast: true,
-                position: "top-right",
-                timer: 2000,
-                showConfirmButton: false,
-                timerProgressBar: true,
-            });
         } finally {
             setLoading(false);
         }

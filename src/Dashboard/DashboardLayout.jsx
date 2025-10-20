@@ -13,6 +13,7 @@ import {
 } from "react-icons/fa";
 import { useAuth } from "../Components/AuthContext";
 import DashboardNavbar from "./DashboardNavbar";
+import Footer from "../Components/Footer";
 
 // ...imports remain the same
 

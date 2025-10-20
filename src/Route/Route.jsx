@@ -33,6 +33,8 @@ import ManageUsersSkeleton from "../Skeletons/ManageUsersSkeleton";
 import AdminProfileSkeleton from "../Skeletons/AdminProfileSkeleton";
 import AddPostSkeleton from "../skeletons/AddPostSkeleton";
 import ReportedCommentsSkeleton from "../skeletons/ReportedCommentsSkeleton";
+import AddAnnouncementSkeleton from "../skeletons/AddAnnouncementsSkeleton";
+import MembershipSuccess from "../Components/MembershipSuccess";
 
 export const router = createBrowserRouter([
     {
@@ -51,6 +53,10 @@ export const router = createBrowserRouter([
                         <Membership />
                     </UserRoute>
                 ),
+            },
+            {
+                path: "membership/success",
+                element: <MembershipSuccess />,
             },
             { path: "forbidden", Component: Forbidden },
         ],
@@ -132,7 +138,7 @@ export const router = createBrowserRouter([
                 path: "addannouncement",
                 element: (
                     <AdminRoute>
-                        <AddAnnouncement />
+                        <AddAnnouncement skeleton={<AddAnnouncementSkeleton></AddAnnouncementSkeleton>} />
                     </AdminRoute>
                 ),
             },

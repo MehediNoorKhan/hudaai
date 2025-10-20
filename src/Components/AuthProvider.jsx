@@ -82,32 +82,58 @@ const AuthProvider = ({ children }) => {
         return signOut(auth);
     };
 
-    // Fetch user role from backend
+
+    // const fetchUserRole = async (userEmail) => {
+    //     if (!userEmail) {
+    //         console.log("No email provided for role fetch");
+    //         setRole(null);
+    //         return;
+    //     }
+
+    //     try {
+    //         console.log("Fetching role for:", userEmail);
+    //         const response = await axiosSecure.get(`/users/role/${userEmail}`);
+    //         console.log("Role response:", response.data);
+
+    //         if (response.data && response.data.role) {
+    //             setRole(response.data.role);
+    //             console.log("Role set to:", response.data.role);
+    //         } else {
+    //             console.log("No role found in response");
+    //             setRole(null);
+    //         }
+    //     } catch (error) {
+    //         console.error("Error fetching user role:", error);
+    //         console.error("Error details:", error.response?.data);
+    //         setRole(null);
+    //     }
+    // };
+
+
     const fetchUserRole = async (userEmail) => {
-        if (!userEmail) {
-            console.log("No email provided for role fetch");
-            setRole(null);
-            return;
+        if (!userEmail) return setRole(null);
+
+        const token = localStorage.getItem("access-token");
+        if (!token) {
+            console.log("JWT not ready, cannot fetch role");
+            return setRole(null);
         }
 
         try {
-            console.log("Fetching role for:", userEmail);
-            const response = await axiosSecure.get(`/users/role/${userEmail}`);
-            console.log("Role response:", response.data);
-
-            if (response.data && response.data.role) {
+            const response = await axiosSecure.get(`/users/role/${userEmail}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (response.data?.role) {
                 setRole(response.data.role);
-                console.log("Role set to:", response.data.role);
             } else {
-                console.log("No role found in response");
                 setRole(null);
             }
-        } catch (error) {
-            console.error("Error fetching user role:", error);
-            console.error("Error details:", error.response?.data);
+        } catch (err) {
+            console.error("Error fetching role:", err.response?.data || err.message);
             setRole(null);
         }
     };
+
 
     // useEffect(() => {
     //     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {

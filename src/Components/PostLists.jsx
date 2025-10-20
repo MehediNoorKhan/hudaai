@@ -3,10 +3,10 @@ import { useNavigate } from "react-router";
 import { FaThumbsUp, FaThumbsDown, FaComment } from "react-icons/fa";
 import Swal from "sweetalert2";
 import axios from "axios";
-import useAxiosSecure from "./useAxiosSecure";
 import { AuthContext } from "./AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import FailedToLoad from "./FailedToLoad";
+import useAxiosSecure from "./useAxiosSecure";
 
 const fetchPosts = async ({ queryKey }) => {
     const [_key, { popularity, page }] = queryKey;

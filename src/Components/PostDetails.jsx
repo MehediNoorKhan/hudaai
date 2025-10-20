@@ -6,7 +6,6 @@ import "react-toastify/dist/ReactToastify.css";
 import useAxiosSecure from "./useAxiosSecure";
 import { AuthContext } from "./AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
 
 export default function PostDetails() {
   const { id } = useParams();
@@ -15,11 +14,12 @@ export default function PostDetails() {
   const queryClient = useQueryClient();
   const [newComment, setNewComment] = useState("");
 
+
   // Fetch post
   const { data: post, isLoading, isError } = useQuery({
     queryKey: ["post", id],
     queryFn: async () => {
-      const { data } = await axios.get(`http://localhost:5000/posts/${id}`);
+      const { data } = await axiosSecure.get(`/posts/${id}`);
       return {
         ...data,
         upVote: data.upVote ?? 0,
